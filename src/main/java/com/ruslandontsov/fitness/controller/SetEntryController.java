@@ -1,5 +1,6 @@
 package com.ruslandontsov.fitness.controller;
 
+import com.ruslandontsov.fitness.dto.CreateSetEntryRequest;
 import com.ruslandontsov.fitness.model.SetEntry;
 import com.ruslandontsov.fitness.service.SetEntryService;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,7 @@ public class SetEntryController {
     }
 
     @PostMapping
-    public SetEntry createSet(@RequestBody SetEntry set) {
-        return setService.createSet(set);
-    }
-
-    @GetMapping("/workout/{workoutId}")
-    public List<SetEntry> getWorkoutSets(@PathVariable Long workoutId) {
-        return setService.getSetsByWorkout(workoutId);
+    public SetEntry createSet(@RequestBody CreateSetEntryRequest request) {
+        return setService.createSet(request);
     }
 }

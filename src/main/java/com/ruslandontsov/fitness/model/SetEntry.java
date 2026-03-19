@@ -13,15 +13,15 @@ public class SetEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String exerciseName;
-
     private int reps;
 
     private double weight;
 
-    private String muscleGroup;
-
     @ManyToOne
     @JoinColumn(name = "workout_id")
     private Workout workout;
+
+    @ManyToOne
+    @JoinColumn(name = "exercise_type_id")
+    private ExerciseType exerciseType;
 }

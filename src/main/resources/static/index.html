@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fitness Tracker</title>
+</head>
+<body>
+
+<h1>Fitness Tracker</h1>
+
+<h2>Create Workout</h2>
+<input id="userId" placeholder="User ID">
+<input id="workoutName" type="text" placeholder="Workout Name">
+<button onclick="createWorkout()">Create Workout</button>
+
+<h2>Add Set</h2>
+<input id="workoutId" placeholder="Workout ID">
+<select id="exerciseSelect"></select>
+<input id="reps" placeholder="Reps">
+<input id="weight" placeholder="Weight">
+<button onclick="addSet()">Add Set</button>
+
+<h2>View Sets</h2>
+<input id="viewWorkoutId" placeholder="Workout ID">
+<button onclick="loadSets()">Load Sets</button>
+
+<ul id="setsList"></ul>
+
+<script src="app.js"></script>
+
+</body>
+</html>

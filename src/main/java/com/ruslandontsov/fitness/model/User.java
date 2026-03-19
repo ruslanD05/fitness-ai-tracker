@@ -15,7 +15,9 @@ public class User {
 
     private String email;
 
-    private String goal;
+    @Enumerated(EnumType.STRING)
+    private UserGoal goal;
 
-    private String experienceLevel;
+    @Enumerated(EnumType.STRING)
+    private UserExperience experienceLevel;
 }
