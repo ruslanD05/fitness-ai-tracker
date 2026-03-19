@@ -1,19 +1,38 @@
 const API = "http://localhost:8080";
 
-async function createWorkout() {
-    const userId = document.getElementById("userId").value
-    const name = document.getElementById("workoutName").value
-    const res = await fetch(`${API}/api/users/${userId}/workouts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            name:name,
-            date: new Date().toISOString().split("T")[0]
-        })
-    });
+const isGuest = true; // later: based on login
 
-    const data = await res.json();
-    alert("Workout created with ID: " + data.id);
+async function createWorkout() {
+    const name = document.getElementById("workoutName").value;
+
+    if (isGuest) {
+        // LOCAL STORAGE
+        const workouts = JSON.parse(localStorage.getItem("workouts") || "[]");
+
+        const newWorkout = {
+            id: Date.now(),
+            name,
+            date: new Date().toISOString().split("T")[0]
+        };
+
+        workouts.push(newWorkout);
+        localStorage.setItem("workouts", JSON.stringify(workouts));
+
+        alert("Guest workout created!");
+    } else {
+        // BACKEND
+        const res = await fetch(`${API}/api/workouts`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name,
+                date: new Date().toISOString().split("T")[0]
+            })
+        });
+
+        const data = await res.json();
+        alert("Workout created with ID: " + data.id);
+    }
 }
 
 async function addSet() {

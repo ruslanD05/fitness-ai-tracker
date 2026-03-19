@@ -27,6 +27,11 @@ public class UserController {
         return userService.createUser(user);
     }
 
+    @GetMapping("/workouts/history")
+    public List<Workout> getUserWorkouts() {
+        return workoutService.getWorkoutsByUser(getCurrentUserId());
+    }
+
     @PostMapping("/workouts")
     public Workout createWorkout(
             @RequestBody CreateWorkoutRequest request

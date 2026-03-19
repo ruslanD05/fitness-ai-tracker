@@ -21,11 +21,6 @@ public class WorkoutController {
         this.setEntryService = setEntryService;
     }
 
-    @GetMapping("/user/{userId}")
-    public List<Workout> getUserWorkouts(@PathVariable Long userId) {
-        return workoutService.getWorkoutsByUser(userId);
-    }
-
     @GetMapping("/{workoutId}/sets")
     public List<SetEntry> getWorkoutSets(@PathVariable Long workoutId) {
         if (!workoutService.existsById(workoutId)) {
