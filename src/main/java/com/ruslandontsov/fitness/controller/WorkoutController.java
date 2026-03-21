@@ -5,6 +5,7 @@ import com.ruslandontsov.fitness.model.SetEntry;
 import com.ruslandontsov.fitness.model.Workout;
 import com.ruslandontsov.fitness.service.SetEntryService;
 import com.ruslandontsov.fitness.service.WorkoutService;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,5 +28,22 @@ public class WorkoutController {
             throw new RuntimeException("Workout not found");
         }
         return setEntryService.getSetsByWorkout(workoutId);
+    }
+
+    @GetMapping
+    public List<Workout> getUserWorkouts() {
+        return workoutService.getWorkoutsByUser(getCurrentUserId());
+    }
+
+    @PostMapping
+    public Workout createWorkout(
+            @RequestBody CreateWorkoutRequest request
+    ) {
+        Long userId = getCurrentUserId();
+        return workoutService.createWorkout(userId, request);
+    }
+
+    private Long getCurrentUserId(){
+        return (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

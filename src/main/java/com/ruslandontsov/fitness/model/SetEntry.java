@@ -17,6 +17,8 @@ public class SetEntry {
 
     private double weight;
 
+    private boolean completed = false;
+
     @ManyToOne
     @JoinColumn(name = "workout_id")
     private Workout workout;
