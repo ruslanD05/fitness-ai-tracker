@@ -18,4 +18,8 @@ public class ExerciseType {
 
     @Enumerated(EnumType.STRING)
     private MuscleGroup muscleGroup;
+
+    private Integer averageSetDurationSeconds;
+
+    private Double baselineLoad;
 }

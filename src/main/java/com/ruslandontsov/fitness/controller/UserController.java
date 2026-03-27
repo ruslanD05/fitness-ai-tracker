@@ -1,10 +1,9 @@
 package com.ruslandontsov.fitness.controller;
 
-import com.ruslandontsov.fitness.dto.CreateWorkoutRequest;
 import com.ruslandontsov.fitness.model.User;
-import com.ruslandontsov.fitness.model.Workout;
+import com.ruslandontsov.fitness.model.UserExperience;
+import com.ruslandontsov.fitness.model.UserGoal;
 import com.ruslandontsov.fitness.service.UserService;
-import com.ruslandontsov.fitness.service.WorkoutService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,14 +14,18 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService, WorkoutService workoutService) {
+    public UserController(UserService userService) {
          this.userService = userService;
     }
 
-    @PostMapping
-    public User createUser(@RequestBody User user) {
-        user.setId(null);
-        return userService.createUser(user);
+    @PostMapping("/me/exp")
+    public void setExperienceLevel(@RequestBody UserExperience userExperience) {
+        userService.updateUserExperience(userExperience);
+    }
+
+    @PostMapping("/me/goal")
+    public void setExperienceLevel(@RequestBody UserGoal userGoal) {
+        userService.updateUserGoal(userGoal);
     }
 
     @GetMapping

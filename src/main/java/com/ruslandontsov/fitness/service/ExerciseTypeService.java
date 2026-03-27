@@ -34,4 +34,8 @@ public class ExerciseTypeService {
     }
 
     public List<ExerciseType> getExerciseTypeByMuscleGroup(MuscleGroup muscleGroup) {return exerciseTypeRepository.findByMuscleGroup(muscleGroup);}
+
+    public List<ExerciseType> createBulk(List<ExerciseType> exercises) {
+        return exerciseTypeRepository.saveAll(exercises);
+    }
 }

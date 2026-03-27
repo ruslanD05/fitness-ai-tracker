@@ -1,9 +1,11 @@
 package com.ruslandontsov.fitness.service;
 
 import com.ruslandontsov.fitness.model.User;
+import com.ruslandontsov.fitness.model.UserExperience;
+import com.ruslandontsov.fitness.model.UserGoal;
 import com.ruslandontsov.fitness.repository.UserRepository;
 import com.ruslandontsov.fitness.security.JwtService;
-import com.ruslandontsov.fitness.security.MuscleRecoveryService;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,7 @@ public class UserService {
         this.muscleRecoveryService = muscleRecoveryService;
     }
 
-    public User createUser(User user) {
+    private User createUser(User user) {
         return userRepository.save(user);
     }
 
@@ -40,6 +42,10 @@ public class UserService {
         user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));;
         User saved = userRepository.save(user);
 
+        //default values, since they are not asked during registration
+        user.setExperienceLevel(UserExperience.NO_EXPERIENCE);
+        user.setGoal(UserGoal.MUSCLE_GROWTH);
+
         muscleRecoveryService.initializeRecoveryForUser(saved);
         return saved;
     }
@@ -53,12 +59,28 @@ public class UserService {
         return jwtService.generateToken(user.getId());
     }
 
+
+    public Long getCurrentUserId() {
+        return (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
-    public void deleteUser(Long id) {
+    private void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public void updateUserExperience(UserExperience userExperience){
+        User user = getUserById(getCurrentUserId()).orElseThrow();
+        user.setExperienceLevel(userExperience);
+        userRepository.save(user);
+    }
+    public void updateUserGoal(UserGoal userGoal){
+        User user = getUserById(getCurrentUserId()).orElseThrow();
+        user.setGoal(userGoal);
+        userRepository.save(user);
     }
 
 }

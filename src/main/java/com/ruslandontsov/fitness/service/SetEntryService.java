@@ -7,11 +7,9 @@ import com.ruslandontsov.fitness.model.Workout;
 import com.ruslandontsov.fitness.repository.ExerciseTypeRepository;
 import com.ruslandontsov.fitness.repository.SetEntryRepository;
 import com.ruslandontsov.fitness.repository.WorkoutRepository;
-import com.ruslandontsov.fitness.security.MuscleRecoveryService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class SetEntryService {
@@ -57,7 +55,7 @@ public class SetEntryService {
         set.setCompleted(true);
         setRepository.save(set);
 
-        muscleRecoveryService.recoveryUpdate(
+        muscleRecoveryService.updateRecoveryAfterCompletedSet(
                 set.getWorkout().getUser(),
                 set
         );

@@ -24,6 +24,11 @@ public class ExerciseTypeController {
         return exerciseTypeService.createExercise(exercise);
     }
 
+    @PostMapping("/bulk")
+    public List<ExerciseType> createBulk(@RequestBody List<ExerciseType> exercises) {
+        return exerciseTypeService.createBulk(exercises);
+    }
+
     @GetMapping("/search")
     public ExerciseType getByName(@RequestParam String exerciseName){
         return exerciseTypeService.getExerciseTypeByName(exerciseName).orElseThrow(() -> new RuntimeException("Exercise not found"));
