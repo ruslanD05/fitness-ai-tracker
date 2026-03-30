@@ -1,8 +1,8 @@
 package com.ruslandontsov.fitness.dto;
 
-import java.time.LocalDate;
+import jakarta.validation.constraints.NotBlank;
 
 public class CreateWorkoutRequest {
+    @NotBlank(message = "Workout name is required")
     public String name;
-    public LocalDate date;
 }

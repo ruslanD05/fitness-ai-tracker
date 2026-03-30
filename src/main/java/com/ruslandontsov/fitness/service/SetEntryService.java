@@ -1,6 +1,7 @@
 package com.ruslandontsov.fitness.service;
 
 import com.ruslandontsov.fitness.dto.CreateSetEntryRequest;
+import com.ruslandontsov.fitness.exception.ResourceNotFoundException;
 import com.ruslandontsov.fitness.model.ExerciseType;
 import com.ruslandontsov.fitness.model.SetEntry;
 import com.ruslandontsov.fitness.model.Workout;
@@ -30,15 +31,15 @@ public class SetEntryService {
         return setRepository.findByWorkoutId(workoutId);
     }
 
-    public SetEntry createSet(CreateSetEntryRequest request) {
+    public SetEntry createSet(Long workoutId, CreateSetEntryRequest request) {
 
         ExerciseType exercise = exerciseTypeRepository
                 .findById(request.exerciseTypeId)
-                .orElseThrow(() -> new RuntimeException("Exercise not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Exercise not found"));
 
         Workout workout = workoutRepository
-                .findById(request.workoutId)
-                .orElseThrow(() -> new RuntimeException("Workout not found"));
+                .findById(workoutId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workout not found"));
 
         SetEntry set = new SetEntry();
         set.setReps(request.reps);
@@ -49,7 +50,7 @@ public class SetEntryService {
         return setRepository.save(set);
     }
     public void completeSet(Long setId) {
-        SetEntry set = setRepository.findById(setId).orElseThrow(() -> new RuntimeException("Set not found"));
+        SetEntry set = setRepository.findById(setId).orElseThrow(() -> new ResourceNotFoundException("Set not found"));
         if (set.isCompleted()) return; // already completed, do nothing
 
         set.setCompleted(true);

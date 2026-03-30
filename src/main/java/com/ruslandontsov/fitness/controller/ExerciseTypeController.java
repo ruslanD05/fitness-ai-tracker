@@ -1,6 +1,7 @@
 package com.ruslandontsov.fitness.controller;
 
 
+import com.ruslandontsov.fitness.exception.ResourceNotFoundException;
 import com.ruslandontsov.fitness.model.ExerciseType;
 import com.ruslandontsov.fitness.model.MuscleGroup;
 import com.ruslandontsov.fitness.service.ExerciseTypeService;
@@ -31,17 +32,17 @@ public class ExerciseTypeController {
 
     @GetMapping("/search")
     public ExerciseType getByName(@RequestParam String exerciseName){
-        return exerciseTypeService.getExerciseTypeByName(exerciseName).orElseThrow(() -> new RuntimeException("Exercise not found"));
+        return exerciseTypeService.getExerciseTypeByName(exerciseName).orElseThrow(() -> new ResourceNotFoundException("Exercise not found"));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ExerciseType getById(@PathVariable Long id) {
-        return exerciseTypeService.getExerciseTypeById(id).orElseThrow(() -> new RuntimeException("Exercise not found"));
+        return exerciseTypeService.getExerciseTypeById(id).orElseThrow(() -> new ResourceNotFoundException("Exercise not found"));
     }
-    
-    @GetMapping("/{muscle_group}")
-    public List<ExerciseType> getByMuscleGroup(@PathVariable MuscleGroup muscle_group){
-        return exerciseTypeService.getExerciseTypeByMuscleGroup(muscle_group);
+
+    @GetMapping("/muscle-group/{muscleGroup}")
+    public List<ExerciseType> getByMuscleGroup(@PathVariable MuscleGroup muscleGroup){
+        return exerciseTypeService.getExerciseTypeByMuscleGroup(muscleGroup);
     }
 
     @GetMapping

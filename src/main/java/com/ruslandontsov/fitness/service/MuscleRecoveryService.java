@@ -2,6 +2,7 @@ package com.ruslandontsov.fitness.service;
 
 import com.ruslandontsov.fitness.dto.RecoveryResponseDto;
 import com.ruslandontsov.fitness.dto.SuggestionResponseDto;
+import com.ruslandontsov.fitness.exception.ResourceNotFoundException;
 import com.ruslandontsov.fitness.model.*;
 import com.ruslandontsov.fitness.algorithm.MuscleRecommendationSystem;
 import com.ruslandontsov.fitness.repository.MuscleRecoveryRepository;
@@ -49,7 +50,7 @@ public class MuscleRecoveryService {
 
         MuscleRecovery recovery = muscleRecoveryRepository
                 .findByUserAndMuscleGroup(user, muscleGroup)
-                .orElseThrow(() -> new IllegalStateException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Recovery row not found for user " + user.getId() + " and muscle " + muscleGroup
                 ));
 
@@ -96,7 +97,7 @@ public class MuscleRecoveryService {
 
         MuscleRecovery bestRecovery = muscleRecommendationSystem
                 .suggestNextMuscle(recoveries)
-                .orElseThrow(() -> new IllegalStateException("No recovery data found for user " + user.getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("No recovery data found for user " + user.getId()));
 
         return new SuggestionResponseDto(
                 bestRecovery.getMuscleGroup(),

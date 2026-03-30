@@ -3,6 +3,7 @@ package com.ruslandontsov.fitness.controller;
 import com.ruslandontsov.fitness.dto.CreateSetEntryRequest;
 import com.ruslandontsov.fitness.model.SetEntry;
 import com.ruslandontsov.fitness.service.SetEntryService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +20,12 @@ public class SetEntryController {
         this.setService = setService;
     }
 
-    @PostMapping
-    public SetEntry createSet(@RequestBody CreateSetEntryRequest request) {
-        return setService.createSet(request);
+    @PostMapping("/api/workouts/{workoutId}/sets")
+    public SetEntry createSet(
+            @PathVariable Long workoutId,
+            @Valid @RequestBody CreateSetEntryRequest request
+    ) {
+        return setService.createSet(workoutId, request);
     }
 
     @PatchMapping("/{setId}/complete")

@@ -1,5 +1,7 @@
 package com.ruslandontsov.fitness.service;
 
+import com.ruslandontsov.fitness.exception.ResourceNotFoundException;
+import com.ruslandontsov.fitness.exception.UnauthorizedException;
 import com.ruslandontsov.fitness.model.User;
 import com.ruslandontsov.fitness.model.UserExperience;
 import com.ruslandontsov.fitness.model.UserGoal;
@@ -52,9 +54,9 @@ public class UserService {
 
     public String login(String email, String password) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
         if (!BCrypt.checkpw(password, user.getPassword())) {
-            throw new RuntimeException("Wrong password");
+            throw new UnauthorizedException("Invalid email or password");
         }
         return jwtService.generateToken(user.getId());
     }

@@ -2,6 +2,7 @@ package com.ruslandontsov.fitness.controller;
 
 import com.ruslandontsov.fitness.dto.RecoveryResponseDto;
 import com.ruslandontsov.fitness.dto.SuggestionResponseDto;
+import com.ruslandontsov.fitness.exception.ResourceNotFoundException;
 import com.ruslandontsov.fitness.model.MuscleRecovery;
 import com.ruslandontsov.fitness.model.User;
 import com.ruslandontsov.fitness.repository.MuscleRecoveryRepository;
@@ -29,24 +30,15 @@ public class MuscleRecoveryController {
     @GetMapping
     public List<RecoveryResponseDto> getRecoveryMap() {
         Long userId = userService.getCurrentUserId();
-        Optional<User> user = userService.getUserById(userId);
-        if (user.isPresent()){
-            return recoveryService.getRecoveryMapForUser(user.get());
-        }
-        else {
-            throw new RuntimeException();
-        }
+        User user = userService.getUserById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return recoveryService.getRecoveryMapForUser(user);
+
     }
 
     @GetMapping("/suggest")
     public SuggestionResponseDto suggestNextMuscle() {
         Long userId = userService.getCurrentUserId();
-        Optional<User> user = userService.getUserById(userId);
-        if (user.isPresent()){
-            return recoveryService.getSuggestionForUser(user.get());
-        }
-        else {
-            throw new RuntimeException();
-        }
+        User user = userService.getUserById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return recoveryService.getSuggestionForUser(user);
     }
 }

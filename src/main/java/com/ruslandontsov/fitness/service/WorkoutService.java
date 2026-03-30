@@ -7,6 +7,7 @@ import com.ruslandontsov.fitness.repository.UserRepository;
 import com.ruslandontsov.fitness.repository.WorkoutRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public class WorkoutService {
         Workout workout = new Workout();
         workout.setUser(user);
         workout.setName(request.name);
-        workout.setDate(request.date);
+        workout.setDate(LocalDate.now());
 
         return workoutRepository.save(workout);
     }

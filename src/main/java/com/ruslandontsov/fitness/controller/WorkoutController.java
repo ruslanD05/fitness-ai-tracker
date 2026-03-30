@@ -6,6 +6,7 @@ import com.ruslandontsov.fitness.model.Workout;
 import com.ruslandontsov.fitness.service.SetEntryService;
 import com.ruslandontsov.fitness.service.UserService;
 import com.ruslandontsov.fitness.service.WorkoutService;
+import jakarta.validation.Valid;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +41,7 @@ public class WorkoutController {
 
     @PostMapping
     public Workout createWorkout(
-            @RequestBody CreateWorkoutRequest request
+            @Valid @RequestBody CreateWorkoutRequest request
     ) {
         Long userId = userService.getCurrentUserId();
         return workoutService.createWorkout(userId, request);
