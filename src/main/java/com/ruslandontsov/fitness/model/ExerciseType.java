@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -17,7 +19,9 @@ public class ExerciseType {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    private MuscleGroup muscleGroup;
+    private List<MuscleGroup> muscleGroups;
+    @Enumerated(EnumType.STRING)
+    private List<TargetMuscle> targetMuscles;
 
     private Integer averageSetDurationSeconds;
 
