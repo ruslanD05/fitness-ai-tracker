@@ -9,7 +9,15 @@ public record ExerciseProgressionRecommendation(
         boolean increaseWeight,
         boolean increaseReps,
         boolean keepSame,
-        boolean userStableType,
+        boolean straightSets,
         String targetRepRange,
         String reason
-) {}
+) {
+    public boolean isStable() {
+        return keepSame || increaseWeight || increaseReps;
+    }
+
+    public boolean isStraightSets() {
+        return straightSets;
+    }
+}
