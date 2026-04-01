@@ -1,5 +1,6 @@
 package com.ruslandontsov.fitness.service;
 
+import com.ruslandontsov.fitness.dto.MuscleSuggestionDto;
 import com.ruslandontsov.fitness.dto.RecoveryResponseDto;
 import com.ruslandontsov.fitness.dto.SuggestionResponseDto;
 import com.ruslandontsov.fitness.exception.ResourceNotFoundException;
@@ -46,7 +47,7 @@ public class MuscleRecoveryService {
     @Transactional
     public void updateRecoveryAfterCompletedSet(User user, SetEntry setEntry) {
         ExerciseType exerciseType = setEntry.getExerciseType();
-        MuscleGroup muscleGroup = exerciseType.getMuscleGroup();
+        MuscleGroup muscleGroup = exerciseType.getPrimaryMuscleGroup();
 
         MuscleRecovery recovery = muscleRecoveryRepository
                 .findByUserAndMuscleGroup(user, muscleGroup)
@@ -95,13 +96,15 @@ public class MuscleRecoveryService {
     public SuggestionResponseDto getSuggestionForUser(User user) {
         List<MuscleRecovery> recoveries = muscleRecoveryRepository.findByUser(user);
 
-        MuscleRecovery bestRecovery = muscleRecommendationSystem
-                .suggestNextMuscle(recoveries)
-                .orElseThrow(() -> new ResourceNotFoundException("No recovery data found for user " + user.getId()));
+        List<MuscleSuggestionDto> suggestions = muscleRecommendationSystem
+                .suggestNextMuscles(recoveries)
+                .stream()
+                .map(recovery -> new MuscleSuggestionDto(
+                        recovery.getMuscleGroup(),
+                        muscleRecommendationSystem.buildSuggestionReason(recovery)
+                ))
+                .toList();
 
-        return new SuggestionResponseDto(
-                bestRecovery.getMuscleGroup(),
-                muscleRecommendationSystem.buildSuggestionReason(bestRecovery)
-        );
+        return new SuggestionResponseDto(suggestions);
     }
 }

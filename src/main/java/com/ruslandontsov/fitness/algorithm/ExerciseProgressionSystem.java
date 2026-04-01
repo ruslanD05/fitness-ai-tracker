@@ -4,14 +4,15 @@ package com.ruslandontsov.fitness.algorithm;
 import com.ruslandontsov.fitness.dto.ExerciseProgressionRecommendation;
 import com.ruslandontsov.fitness.model.ExerciseType;
 import com.ruslandontsov.fitness.model.SetEntry;
+import com.ruslandontsov.fitness.model.ProgressionStyle;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class ExerciseProgressionSystem {
+public class ExerciseProgressionSystem{
 
-    private static final int LOOKBACK_SETS = 6;
+    private static final int LOOKBACK_SETS = 9;
     private static final int MIN_SETS_FOR_STRONG_SIGNAL = 3;
 
     public int getLookbackSets() {
@@ -20,9 +21,9 @@ public class ExerciseProgressionSystem {
 
     public ExerciseProgressionRecommendation recommend(
             ExerciseType exerciseType,
-            List<SetEntry> recentSets
+            List<SetEntry> userSets
     ) {
-        if (recentSets == null || recentSets.isEmpty()) {
+        if (userSets == null || userSets.isEmpty()) {
             double baselineLoad = exerciseType.getBaselineLoad() != null ? exerciseType.getBaselineLoad() : 0.0;
 
             return new ExerciseProgressionRecommendation(
@@ -34,50 +35,69 @@ public class ExerciseProgressionSystem {
                     false,
                     false,
                     true,
+                    true,
                     "8-10",
                     "No history yet - start from baseline"
             );
         }
 
-        List<SetEntry> usableSets = recentSets.stream()
+        List<SetEntry> usableSets = userSets.stream()
                 .limit(LOOKBACK_SETS)
                 .toList();
 
-        double avgWeight = usableSets.stream()
+        List<SetEntry> performanceSets = extractPerformanceSets(usableSets);
+
+        double avgWeight = performanceSets.stream()
                 .mapToDouble(SetEntry::getWeight)
                 .average()
                 .orElse(0.0);
 
-        double avgReps = usableSets.stream()
+        double avgReps = performanceSets.stream()
                 .mapToInt(SetEntry::getReps)
                 .average()
                 .orElse(0.0);
 
-        List<SetEntry> lastThree = usableSets.stream()
-                .limit(Math.min(MIN_SETS_FOR_STRONG_SIGNAL, usableSets.size()))
+        List<SetEntry> signalSets = performanceSets.stream()
+                .limit(Math.min(MIN_SETS_FOR_STRONG_SIGNAL, performanceSets.size()))
                 .toList();
 
-        boolean stableWeight = areWeightsStable(lastThree);
-        boolean stableReps = areRepsStable(lastThree);
+        ProgressionStyle progressionStyle = detectStyle(usableSets);
 
-        if (lastThree.size() >= MIN_SETS_FOR_STRONG_SIGNAL && stableWeight && stableReps) {
-            int reps = lastThree.getFirst().getReps();
-            double weight = lastThree.getFirst().getWeight();
+        boolean stableWeight = areWeightsStable(signalSets, progressionStyle);
+        boolean stableReps = areRepsStable(signalSets, progressionStyle);
 
-            if (reps >= 12) {
-                double suggestedWeight = increaseWeight(weight);
+        if (progressionStyle == ProgressionStyle.STABLE) {
+            if (stableWeight &&  stableReps) {
+                   if (avgReps >= 12) {
+                    double suggestedWeight = increaseWeight(avgWeight);
+
+                    return new ExerciseProgressionRecommendation(
+                            exerciseType.getId(),
+                            exerciseType.getName(),
+                            round(avgWeight),
+                            round(avgReps),
+                            suggestedWeight,
+                            true,
+                            false,
+                            false,
+                            true,
+                            "8-10",
+                            "Stable performance at 12+ reps - increase weight and reset reps"
+                    );
+                }
 
                 return new ExerciseProgressionRecommendation(
                         exerciseType.getId(),
                         exerciseType.getName(),
                         round(avgWeight),
                         round(avgReps),
-                        suggestedWeight,
+                        avgWeight,
+                        false,
                         true,
                         false,
-                        false,
-                        "8-10",
-                        "Stable performance at 12+ reps - increase weight and reset reps"
+                        true,
+                        (int)(avgReps + 1) + "-" + (int)(avgReps + 2),
+                        "Stable performance below 12 reps - increase reps"
                 );
             }
 
@@ -86,41 +106,146 @@ public class ExerciseProgressionSystem {
                     exerciseType.getName(),
                     round(avgWeight),
                     round(avgReps),
-                    weight,
+                    round(avgWeight),
+                    false,
+                    false,
+                    true,
+                    true,
+                    buildDefaultRepRange(avgReps),
+                    "Recent sets are not stable enough - keep current load"
+            );
+        } else{
+            if (stableWeight && stableReps) {
+                double maxWeight = signalSets.stream().mapToDouble(SetEntry::getWeight).max().orElse(0);
+                //max reps on maxWeight
+                int repsMaxWeightReps = signalSets.stream().filter(se -> Math.abs(se.getWeight() - maxWeight) < 0.0001).mapToInt(SetEntry::getReps).max().orElse(0);
+                double weight = signalSets.stream().mapToDouble(SetEntry::getWeight).max().orElse(0.0);
+
+                if (repsMaxWeightReps >= 8) {
+                    double suggestedWeight = increaseWeight(weight);
+
+                    return new ExerciseProgressionRecommendation(
+                            exerciseType.getId(),
+                            exerciseType.getName(),
+                            round(avgWeight),
+                            round(avgReps),
+                            suggestedWeight,
+                            true,
+                            false,
+                            false,
+                            false,
+                            "4-6",
+                            "Stable performance at 8+ reps - increase weight and reset reps"
+                    );
+                }
+
+                return new ExerciseProgressionRecommendation(
+                        exerciseType.getId(),
+                        exerciseType.getName(),
+                        round(avgWeight),
+                        round(avgReps),
+                        weight,
+                        false,
+                        true,
+                        false,
+                        false,
+                        (repsMaxWeightReps + 1) + "-" + (repsMaxWeightReps + 2),
+                        "Stable performance below 8 reps - increase reps"
+                );
+            }
+
+            return new ExerciseProgressionRecommendation(
+                    exerciseType.getId(),
+                    exerciseType.getName(),
+                    round(avgWeight),
+                    round(avgReps),
+                    round(avgWeight),
+                    false,
                     false,
                     true,
                     false,
-                    (reps + 1) + "-" + (reps + 2),
-                    "Stable performance below 12 reps - increase reps"
+                    buildDefaultRepRange(avgReps),
+                    "Recent sets are not stable enough - keep current load"
             );
         }
 
-        return new ExerciseProgressionRecommendation(
-                exerciseType.getId(),
-                exerciseType.getName(),
-                round(avgWeight),
-                round(avgReps),
-                round(avgWeight),
-                false,
-                false,
-                true,
-                buildDefaultRepRange(avgReps),
-                "Recent sets are not stable enough - keep current load"
-        );
     }
 
-    private boolean areWeightsStable(List<SetEntry> sets) {
-        if (sets.isEmpty()) return false;
+    //detect if user prefers to perform stable sets(e.g. 60x10 - 3 times) or pyramid style(e.g. 40x10, 50x8, 60x5)
+    private ProgressionStyle detectStyle(List<SetEntry> sets) {
+        if (sets.size() < 3) {
+            return ProgressionStyle.STABLE;
+        }
 
-        double first = sets.getFirst().getWeight();
-        return sets.stream().allMatch(se -> Double.compare(se.getWeight(), first) == 0);
+        double minWeight = sets.stream().mapToDouble(SetEntry::getWeight).min().orElse(0);
+        double maxWeight = sets.stream().mapToDouble(SetEntry::getWeight).max().orElse(0);
+        double avgWeight = sets.stream().mapToDouble(SetEntry::getWeight).average().orElse(0);
+
+        double absoluteSpread = maxWeight - minWeight;
+        double relativeSpread = avgWeight == 0 ? 0 : absoluteSpread / avgWeight;
+
+        double minReps = sets.stream().mapToDouble(SetEntry::getReps).min().orElse(0);
+        double maxReps = sets.stream().mapToDouble(SetEntry::getReps).max().orElse(0);
+
+
+        boolean stableWeight = (absoluteSpread <= 5 || relativeSpread <= 0.05 || !isMonotonic(sets));
+        boolean stableReps = (maxReps - minReps) <= 3;
+
+        if (stableWeight && stableReps) {
+            return ProgressionStyle.STABLE;
+        }
+
+        return ProgressionStyle.PYRAMID;
     }
 
-    private boolean areRepsStable(List<SetEntry> sets) {
+    private boolean isMonotonic(List<SetEntry> sets) {
+        boolean nonDecreasing = true;
+        boolean nonIncreasing = true;
+
+        for (int i = 1; i < sets.size(); i++) {
+            double prev = sets.get(i - 1).getWeight();
+            double curr = sets.get(i).getWeight();
+
+            if (curr < prev) nonDecreasing = false;
+            if (curr > prev) nonIncreasing = false;
+        }
+
+        return nonDecreasing || nonIncreasing;
+    }
+
+    private boolean areWeightsStable(List<SetEntry> sets, ProgressionStyle progressionStyle) {
         if (sets.isEmpty()) return false;
 
-        int first = sets.getFirst().getReps();
-        return sets.stream().allMatch(se -> se.getReps() == first);
+        if(progressionStyle == ProgressionStyle.STABLE) {
+            double min = sets.stream().mapToDouble(SetEntry::getWeight).min().orElse(0.0);
+            double max = sets.stream().mapToDouble(SetEntry::getWeight).max().orElse(0.0);
+            // performance sets do not differ by more than 2.5 kgs
+            return (max - min) < 2.5;
+        } else {
+            double max = sets.stream().mapToDouble(SetEntry::getWeight).max().orElse(0.0);
+            long countMax = sets.stream()
+                    .filter(se -> Math.abs(se.getWeight() - max) < 0.0001)
+                    .count();
+            return countMax >= 2;
+        }
+    }
+
+    private boolean areRepsStable(List<SetEntry> sets, ProgressionStyle progressionStyle) {
+        if (sets.isEmpty()) return false;
+
+        if (progressionStyle == ProgressionStyle.STABLE) {
+            int min = sets.stream().mapToInt(SetEntry::getReps).min().orElse(0);
+            int max = sets.stream().mapToInt(SetEntry::getReps).max().orElse(0);
+            // performance sets do not differ by more than 3 reps
+            return (max - min) <= 3;
+        } else {
+            double maxWeight = sets.stream().mapToDouble(SetEntry::getWeight).max().orElse(0);
+            //max reps on maxWeight
+            int max = sets.stream().filter(se -> Math.abs(se.getWeight() - maxWeight) < 0.0001).mapToInt(SetEntry::getReps).max().orElse(0);
+            int min = sets.stream().filter(se -> Math.abs(se.getWeight() - maxWeight) < 0.0001).mapToInt(SetEntry::getReps).min().orElse(0);
+
+            return (max - min) <= 1;
+        }
     }
 
     private double increaseWeight(double currentWeight) {
@@ -138,5 +263,18 @@ public class ExerciseProgressionSystem {
 
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    private List<SetEntry> extractPerformanceSets(List<SetEntry> sets) {
+        if (sets.isEmpty()) return List.of();
+
+        double averageWeight = sets.stream()
+                .mapToDouble(SetEntry::getWeight)
+                .average()
+                .orElse(0.0);
+
+        return sets.stream()
+                .filter(se -> se.getWeight() >= averageWeight)
+                .toList();
     }
 }

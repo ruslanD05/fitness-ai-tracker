@@ -9,6 +9,7 @@ public record ExerciseProgressionRecommendation(
         boolean increaseWeight,
         boolean increaseReps,
         boolean keepSame,
+        boolean userStableType,
         String targetRepRange,
         String reason
 ) {}

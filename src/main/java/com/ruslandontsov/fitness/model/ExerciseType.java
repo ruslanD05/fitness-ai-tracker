@@ -19,11 +19,18 @@ public class ExerciseType {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    private List<MuscleGroup> muscleGroups;
+    private MuscleGroup primaryMuscleGroup;
+
+    @ElementCollection(targetClass = TargetMuscle.class)
+    @CollectionTable(name = "exercise_type_target_muscles", joinColumns = @JoinColumn(name = "exercise_type_id"))
     @Enumerated(EnumType.STRING)
+    @Column(name = "target_muscle")
+    @OrderColumn(name = "priority_index")
     private List<TargetMuscle> targetMuscles;
 
     private Integer averageSetDurationSeconds;
 
     private Double baselineLoad;
+
+    private Double recoveryImpactMultiplier;
 }

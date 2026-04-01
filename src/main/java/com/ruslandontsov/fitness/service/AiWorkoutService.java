@@ -13,7 +13,4 @@ public class AiWorkoutService {
         this.exerciseTypeService = exerciseTypeService;
     }
 
-    public AiWorkoutResponse generateWorkout(GenerateWorkoutRequest request){
-
-    }
 }
