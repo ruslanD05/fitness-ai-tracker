@@ -23,7 +23,7 @@ public class ExerciseProgressionSystem{
             ExerciseType exerciseType,
             List<SetEntry> userSets
     ) {
-        if (userSets == null || userSets.isEmpty()) {
+        if (userSets == null || userSets.isEmpty() || userSets.size() < MIN_SETS_FOR_STRONG_SIGNAL) {
             double baselineLoad = exerciseType.getBaselineLoad() != null ? exerciseType.getBaselineLoad() : 0.0;
 
             return new ExerciseProgressionRecommendation(

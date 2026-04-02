@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fitness AI Tracker - Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #111827;
+            --panel-2: #1f2937;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --accent: #22c55e;
+            --accent-2: #16a34a;
+            --danger: #ef4444;
+            --border: #374151;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, #0b1220 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .brand p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #052e16;
+        }
+
+        .btn-primary:hover { background: var(--accent-2); }
+
+        .btn-secondary {
+            background: var(--panel-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fecaca;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: rgba(17, 24, 39, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .panel-subtitle {
+            margin: 0 0 18px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .quick-link {
+            display: block;
+            text-decoration: none;
+            color: var(--text);
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .quick-link strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .quick-link span {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #0b1220;
+            color: var(--text);
+        }
+
+        .workout-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .workout-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .workout-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .workout-meta strong {
+            font-size: 16px;
+        }
+
+        .workout-meta span {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .workout-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            color: var(--muted);
+            text-align: center;
+            padding: 20px 10px;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+        }
+
+        .status {
+            margin-top: 12px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .status.error { color: #fca5a5; }
+        .status.success { color: #86efac; }
+
+        .user-card {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+
+        .user-card p {
+            margin: 6px 0;
+            color: var(--muted);
+        }
+
+        .small-note {
+            margin-top: 14px;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-links {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="topbar">
+        <div class="brand">
+            <h1>Dashboard</h1>
+            <p>Manage workouts, review recovery, and generate your next session.</p>
+        </div>
+        <div class="topbar-actions">
+            <a class="btn btn-secondary" href="/recovery.html">Recovery</a>
+            <a class="btn btn-secondary" href="/generate-workout.html">Generate Workout</a>
+            <button id="logoutBtn" class="btn btn-danger" type="button">Log out</button>
+        </div>
+    </header>
+
+    <main class="grid">
+        <section class="panel">
+            <h2>Your Workouts</h2>
+            <p class="panel-subtitle">Create a workout, then open it to log and complete sets.</p>
+
+            <div class="quick-links">
+                <a class="quick-link" href="/recovery.html">
+                    <strong>Recovery Overview</strong>
+                    <span>See fatigue scores and current recovery status by muscle group.</span>
+                </a>
+                <a class="quick-link" href="/generate-workout.html">
+                    <strong>Workout Generator</strong>
+                    <span>Build a deterministic workout from recovery and progression data.</span>
+                </a>
+            </div>
+
+            <div id="workoutStatus" class="status"></div>
+            <div id="workoutList" class="workout-list">
+                <div class="empty-state">Loading workouts...</div>
+            </div>
+        </section>
+
+        <aside class="panel">
+            <h2>Create Workout</h2>
+            <p class="panel-subtitle">Start a workout session for today. The backend should set the date automatically.</p>
+
+            <div class="user-card">
+                <strong id="welcomeText">Welcome back</strong>
+                <p id="userInfoText">Your account is ready.</p>
+            </div>
+
+            <form id="createWorkoutForm">
+                <div>
+                    <label for="workoutName">Workout name</label>
+                    <input id="workoutName" name="workoutName" type="text" placeholder="Upper Body A" required />
+                </div>
+                <button class="btn btn-primary" type="submit">Create workout</button>
+            </form>
+            <div id="createWorkoutStatus" class="status"></div>
+
+            <p class="small-note">
+                Suggested next flow: create a workout, open it, add set entries, complete sets,
+                then check recovery or generate your next workout.
+            </p>
+        </aside>
+    </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+    (function () {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+            return;
+        }
+
+        const workoutList = document.getElementById('workoutList');
+        const workoutStatus = document.getElementById('workoutStatus');
+        const createWorkoutForm = document.getElementById('createWorkoutForm');
+        const createWorkoutStatus = document.getElementById('createWorkoutStatus');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const welcomeText = document.getElementById('welcomeText');
+        const userInfoText = document.getElementById('userInfoText');
+
+        logoutBtn.addEventListener('click', function () {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        createWorkoutForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            createWorkoutStatus.textContent = 'Creating workout...';
+            createWorkoutStatus.className = 'status';
+
+            const name = document.getElementById('workoutName').value.trim();
+            if (!name) {
+                createWorkoutStatus.textContent = 'Workout name is required.';
+                createWorkoutStatus.className = 'status error';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/workouts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ name })
+                });
+
+                if (!response.ok) {
+                    const errorData = await tryReadJson(response);
+                    throw new Error(readErrorMessage(errorData, 'Failed to create workout'));
+                }
+
+                const createdWorkout = await response.json();
+                createWorkoutStatus.textContent = 'Workout created successfully.';
+                createWorkoutStatus.className = 'status success';
+                createWorkoutForm.reset();
+                await loadWorkouts();
+
+                if (createdWorkout && createdWorkout.id) {
+                    setTimeout(function () {
+                        window.location.href = '/workout.html?workoutId=' + createdWorkout.id;
+                    }, 400);
+                }
+            } catch (error) {
+                createWorkoutStatus.textContent = error.message || 'Failed to create workout.';
+                createWorkoutStatus.className = 'status error';
+            }
+        });
+
+        async function loadWorkouts() {
+            workoutStatus.textContent = 'Loading workouts...';
+            workoutStatus.className = 'status';
+
+            try {
+                const response = await fetch('/api/workouts', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await tryReadJson(response);
+                    throw new Error(readErrorMessage(errorData, 'Failed to load workouts'));
+                }
+
+                const workouts = await response.json();
+                renderWorkouts(workouts);
+                workoutStatus.textContent = '';
+                welcomeText.textContent = 'Welcome back';
+                userInfoText.textContent = workouts.length + ' workout(s) found.';
+            } catch (error) {
+                workoutList.innerHTML = '<div class="empty-state">Could not load workouts.</div>';
+                workoutStatus.textContent = error.message || 'Could not load workouts.';
+                workoutStatus.className = 'status error';
+            }
+        }
+
+        function renderWorkouts(workouts) {
+            if (!Array.isArray(workouts) || workouts.length === 0) {
+                workoutList.innerHTML = '<div class="empty-state">No workouts yet. Create your first one on the right.</div>';
+                return;
+            }
+
+            workoutList.innerHTML = workouts.map(function (workout) {
+                const dateText = workout.date ? escapeHtml(workout.date) : 'No date';
+                const nameText = escapeHtml(workout.name || 'Unnamed workout');
+                return '\n                    <div class="workout-item">\n                        <div class="workout-meta">\n                            <strong>' + nameText + '</strong>\n                            <span>' + dateText + '</span>\n                        </div>\n                        <div class="workout-actions">\n                            <a class="btn btn-secondary" href="/workout.html?workoutId=' + workout.id + '">Open</a>\n                        </div>\n                    </div>\n                ';
+            }).join('');
+        }
+
+        async function tryReadJson(response) {
+            try {
+                return await response.json();
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function readErrorMessage(errorData, fallback) {
+            if (!errorData) return fallback;
+            if (typeof errorData.message === 'string' && errorData.message.trim()) return errorData.message;
+            return fallback;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        loadWorkouts();
+    })();
+</script>
+</body>
+</html>

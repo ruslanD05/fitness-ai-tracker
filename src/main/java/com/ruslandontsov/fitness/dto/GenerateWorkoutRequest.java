@@ -5,7 +5,5 @@ import jakarta.validation.constraints.Positive;
 
 public class GenerateWorkoutRequest {
     @Positive
-    public Long workoutDuration;
-    @NotNull
-    public boolean includeWarmup;
+    public int workoutDuration;
 }
