@@ -34,6 +34,11 @@ public class WorkoutController {
         return setEntryService.getSetsByWorkout(workoutId);
     }
 
+    @DeleteMapping("/{workoutId}/delete")
+    public void deleteWorkout(@PathVariable Long workoutId) {
+        workoutService.deleteWorkout(userService.getCurrentUserId(), workoutId);
+    }
+
     @GetMapping
     public List<Workout> getUserWorkouts() {
         return workoutService.getWorkoutsByUser(userService.getCurrentUserId());

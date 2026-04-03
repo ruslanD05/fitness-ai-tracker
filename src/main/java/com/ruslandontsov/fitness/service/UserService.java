@@ -47,7 +47,6 @@ public class UserService {
         //default values, since they are not asked during registration
         user.setExperienceLevel(UserExperience.NO_EXPERIENCE);
         user.setGoal(UserGoal.MUSCLE_GROWTH);
-        user.setFocusOnUpperBody(true);
 
         muscleRecoveryService.initializeRecoveryForUser(saved);
         return saved;

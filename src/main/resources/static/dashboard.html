@@ -70,6 +70,10 @@
             font-weight: 700;
             cursor: pointer;
             transition: 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-primary {
@@ -85,10 +89,18 @@
             border: 1px solid var(--border);
         }
 
+        .btn-secondary:hover {
+            background: #273548;
+        }
+
         .btn-danger {
             background: rgba(239, 68, 68, 0.15);
             color: #fecaca;
             border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.22);
         }
 
         .grid {
@@ -291,6 +303,11 @@
             <div id="workoutList" class="workout-list">
                 <div class="empty-state">Loading workouts...</div>
             </div>
+            <div style="margin-top: 14px;">
+                <button id="toggleWorkoutsBtn" class="btn btn-secondary" type="button" style="display: none;">
+                    Show all workouts
+                </button>
+            </div>
         </section>
 
         <aside class="panel">
@@ -319,9 +336,6 @@
     </main>
 </div>
 
-<script src="/js/api.js"></script>
-<script src="/js/auth.js"></script>
-<script src="/js/dashboard.js"></script>
 <script>
     (function () {
         const token = localStorage.getItem('token');
@@ -337,10 +351,20 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const welcomeText = document.getElementById('welcomeText');
         const userInfoText = document.getElementById('userInfoText');
+        const toggleWorkoutsBtn = document.getElementById('toggleWorkoutsBtn');
+
+        const WORKOUTS_PREVIEW_LIMIT = 6;
+        let allWorkouts = [];
+        let showAllWorkouts = false;
 
         logoutBtn.addEventListener('click', function () {
             localStorage.removeItem('token');
             window.location.href = '/login.html';
+        });
+
+        toggleWorkoutsBtn.addEventListener('click', function () {
+            showAllWorkouts = !showAllWorkouts;
+            renderWorkouts(allWorkouts);
         });
 
         createWorkoutForm.addEventListener('submit', async function (event) {
@@ -404,10 +428,11 @@
                 }
 
                 const workouts = await response.json();
-                renderWorkouts(workouts);
+                allWorkouts = sortWorkoutsNewestFirst(workouts);
+                renderWorkouts(allWorkouts);
                 workoutStatus.textContent = '';
                 welcomeText.textContent = 'Welcome back';
-                userInfoText.textContent = workouts.length + ' workout(s) found.';
+                userInfoText.textContent = allWorkouts.length + ' workout(s) found.';
             } catch (error) {
                 workoutList.innerHTML = '<div class="empty-state">Could not load workouts.</div>';
                 workoutStatus.textContent = error.message || 'Could not load workouts.';
@@ -418,14 +443,101 @@
         function renderWorkouts(workouts) {
             if (!Array.isArray(workouts) || workouts.length === 0) {
                 workoutList.innerHTML = '<div class="empty-state">No workouts yet. Create your first one on the right.</div>';
+                toggleWorkoutsBtn.style.display = 'none';
                 return;
             }
 
-            workoutList.innerHTML = workouts.map(function (workout) {
+            const visibleWorkouts = showAllWorkouts
+                ? workouts
+                : workouts.slice(0, WORKOUTS_PREVIEW_LIMIT);
+
+            workoutList.innerHTML = visibleWorkouts.map(function (workout) {
                 const dateText = workout.date ? escapeHtml(workout.date) : 'No date';
                 const nameText = escapeHtml(workout.name || 'Unnamed workout');
-                return '\n                    <div class="workout-item">\n                        <div class="workout-meta">\n                            <strong>' + nameText + '</strong>\n                            <span>' + dateText + '</span>\n                        </div>\n                        <div class="workout-actions">\n                            <a class="btn btn-secondary" href="/workout.html?workoutId=' + workout.id + '">Open</a>\n                        </div>\n                    </div>\n                ';
+
+                return `
+                    <div class="workout-item">
+                        <div class="workout-meta">
+                            <strong>${nameText}</strong>
+                            <span>${dateText}</span>
+                        </div>
+                        <div class="workout-actions">
+                            <a class="btn btn-secondary" href="/workout.html?workoutId=${workout.id}">Open</a>
+                            <button class="btn btn-danger" type="button" data-delete-id="${workout.id}">Delete</button>
+                        </div>
+                    </div>
+                `;
             }).join('');
+
+            if (workouts.length > WORKOUTS_PREVIEW_LIMIT) {
+                toggleWorkoutsBtn.style.display = 'inline-flex';
+                toggleWorkoutsBtn.textContent = showAllWorkouts
+                    ? 'Show only last 6'
+                    : 'Show all workouts';
+            } else {
+                toggleWorkoutsBtn.style.display = 'none';
+            }
+
+            attachDeleteHandlers();
+        }
+
+        function attachDeleteHandlers() {
+            document.querySelectorAll('[data-delete-id]').forEach(function (button) {
+                button.addEventListener('click', async function () {
+                    const workoutId = button.getAttribute('data-delete-id');
+                    if (!workoutId) return;
+
+                    const confirmed = window.confirm('Delete this workout?');
+                    if (!confirmed) return;
+
+                    workoutStatus.textContent = 'Deleting workout...';
+                    workoutStatus.className = 'status';
+
+                    try {
+                        const response = await fetch(`/api/workouts/${workoutId}/delete`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': 'Bearer ' + token
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await tryReadJson(response);
+                            throw new Error(readErrorMessage(errorData, 'Failed to delete workout'));
+                        }
+
+                        workoutStatus.textContent = 'Workout deleted.';
+                        workoutStatus.className = 'status success';
+
+                        allWorkouts = allWorkouts.filter(function (workout) {
+                            return String(workout.id) !== String(workoutId);
+                        });
+
+                        if (showAllWorkouts && allWorkouts.length <= WORKOUTS_PREVIEW_LIMIT) {
+                            showAllWorkouts = false;
+                        }
+
+                        renderWorkouts(allWorkouts);
+                        userInfoText.textContent = allWorkouts.length + ' workout(s) found.';
+                    } catch (error) {
+                        workoutStatus.textContent = error.message || 'Failed to delete workout.';
+                        workoutStatus.className = 'status error';
+                    }
+                });
+            });
+        }
+
+        function sortWorkoutsNewestFirst(workouts) {
+            return [...workouts].sort(function (a, b) {
+                const dateA = a.date ? new Date(a.date).getTime() : 0;
+                const dateB = b.date ? new Date(b.date).getTime() : 0;
+
+                if (dateB !== dateA) {
+                    return dateB - dateA;
+                }
+
+                return (b.id || 0) - (a.id || 0);
+            });
         }
 
         async function tryReadJson(response) {

@@ -17,9 +17,4 @@ public class AiWorkoutController {
     public AiWorkoutController(AiWorkoutService aiWorkoutService){
         this.aiWorkoutService = aiWorkoutService;
     }
-
-    @PostMapping("/generate-workout")
-    public AiWorkoutResponse build_workout(@Valid @RequestBody GenerateWorkoutRequest request){
-        return aiWorkoutService.generateWorkout(request);
-    }
 }

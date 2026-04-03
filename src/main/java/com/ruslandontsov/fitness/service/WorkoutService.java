@@ -1,6 +1,7 @@
 package com.ruslandontsov.fitness.service;
 
 import com.ruslandontsov.fitness.dto.CreateWorkoutRequest;
+import com.ruslandontsov.fitness.exception.ResourceNotFoundException;
 import com.ruslandontsov.fitness.model.User;
 import com.ruslandontsov.fitness.model.Workout;
 import com.ruslandontsov.fitness.repository.UserRepository;
@@ -32,6 +33,13 @@ public class WorkoutService {
         workout.setDate(LocalDate.now());
 
         return workoutRepository.save(workout);
+    }
+
+    public void deleteWorkout(Long userId, Long workoutId) {
+        Workout workout = workoutRepository.findByIdAndUserId(workoutId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workout not found"));
+
+        workoutRepository.delete(workout);
     }
 
     public List<Workout> getWorkoutsByUser(Long userId) {
