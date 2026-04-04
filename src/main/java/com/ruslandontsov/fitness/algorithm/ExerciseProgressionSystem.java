@@ -36,7 +36,7 @@ public class ExerciseProgressionSystem{
                     false,
                     true,
                     true,
-                    "8-10",
+                    8,
                     "No history yet - start from baseline"
             );
         }
@@ -81,7 +81,7 @@ public class ExerciseProgressionSystem{
                             false,
                             false,
                             true,
-                            "8-10",
+                            (int) round(avgReps),
                             "Stable performance at 12+ reps - increase weight and reset reps"
                     );
                 }
@@ -96,7 +96,7 @@ public class ExerciseProgressionSystem{
                         true,
                         false,
                         true,
-                        (int)(avgReps + 1) + "-" + (int)(avgReps + 2),
+                        (int) round(avgReps + 1),
                         "Stable performance below 12 reps - increase reps"
                 );
             }
@@ -111,7 +111,7 @@ public class ExerciseProgressionSystem{
                     false,
                     true,
                     true,
-                    buildDefaultRepRange(avgReps),
+                    (int) round(avgReps),
                     "Recent sets are not stable enough - keep current load"
             );
         } else{
@@ -134,7 +134,7 @@ public class ExerciseProgressionSystem{
                             false,
                             false,
                             false,
-                            "4-6",
+                            (int) round(avgReps),
                             "Stable performance at 8+ reps - increase weight and reset reps"
                     );
                 }
@@ -149,7 +149,7 @@ public class ExerciseProgressionSystem{
                         true,
                         false,
                         false,
-                        (repsMaxWeightReps + 1) + "-" + (repsMaxWeightReps + 2),
+                        (int) round(avgReps+1),
                         "Stable performance below 8 reps - increase reps"
                 );
             }
@@ -164,7 +164,7 @@ public class ExerciseProgressionSystem{
                     false,
                     true,
                     false,
-                    buildDefaultRepRange(avgReps),
+                    (int) round(avgReps),
                     "Recent sets are not stable enough - keep current load"
             );
         }
@@ -253,12 +253,6 @@ public class ExerciseProgressionSystem{
         if (currentWeight <= 10) return round(currentWeight + 1.0);
         if (currentWeight <= 25) return round(currentWeight + 2.0);
         return round(currentWeight + 2.5);
-    }
-
-    private String buildDefaultRepRange(double avgReps) {
-        if (avgReps < 8) return "8-10";
-        if (avgReps < 12) return "10-12";
-        return "8-10";
     }
 
     private double round(double value) {

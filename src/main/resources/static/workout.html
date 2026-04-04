@@ -231,6 +231,66 @@
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
     }
+
+    .exercise-group {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .exercise-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(11, 18, 32, 0.55);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .exercise-group-header strong {
+      font-size: 16px;
+    }
+
+    .exercise-group-header span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .exercise-sets {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .exercise-set-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-top: 1px solid rgba(55, 65, 81, 0.65);
+      flex-wrap: wrap;
+    }
+
+    .exercise-set-row:first-child {
+      border-top: none;
+    }
+
+    .exercise-set-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .exercise-set-meta strong {
+      font-size: 14px;
+    }
+
+    .exercise-set-meta span {
+      color: var(--muted);
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -412,28 +472,65 @@
     function renderSets(sets) {
       setsContainer.innerHTML = '';
 
+      const groupedSets = new Map();
+
       sets.forEach(set => {
-        const item = document.createElement('div');
-        item.className = 'set-item';
+        const exerciseId = set.exerciseType?.id ?? set.exerciseTypeId ?? 'unknown';
+        const exerciseName = set.exerciseType?.name || `Exercise #${exerciseId}`;
 
-        const exerciseName = set.exerciseType?.name || `Exercise #${set.exerciseType?.id ?? set.exerciseTypeId ?? '?'}`;
-        const statusBadge = set.completed
-          ? '<span class="badge badge-done">Completed</span>'
-          : '<span class="badge badge-pending">Pending</span>';
+        if (!groupedSets.has(exerciseId)) {
+          groupedSets.set(exerciseId, {
+            exerciseId,
+            exerciseName,
+            sets: []
+          });
+        }
 
-        item.innerHTML = `
-          <div class="set-meta">
-            <strong>${escapeHtml(exerciseName)}</strong>
-            <span>${set.reps} reps × ${set.weight} kg</span>
-            <span>Set ID: ${set.id}</span>
-          </div>
-          <div class="actions">
-            ${statusBadge}
-            ${!set.completed ? `<button class="btn btn-primary" data-complete-id="${set.id}">Complete</button>` : ''}
-          </div>
-        `;
+        groupedSets.get(exerciseId).sets.push(set);
+      });
 
-        setsContainer.appendChild(item);
+      groupedSets.forEach(group => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'exercise-group';
+
+        const completedCount = group.sets.filter(set => set.completed).length;
+
+        wrapper.innerHTML = `
+      <div class="exercise-group-header">
+        <div>
+          <strong>${escapeHtml(group.exerciseName)}</strong>
+          <span>${completedCount}/${group.sets.length} completed</span>
+        </div>
+      </div>
+      <div class="exercise-sets"></div>
+    `;
+
+        const setsBlock = wrapper.querySelector('.exercise-sets');
+
+        group.sets.forEach((set, index) => {
+          const row = document.createElement('div');
+          row.className = 'exercise-set-row';
+
+          const statusBadge = set.completed
+                  ? '<span class="badge badge-done">Completed</span>'
+                  : '<span class="badge badge-pending">Pending</span>';
+
+          row.innerHTML = `
+        <div class="exercise-set-meta">
+          <strong>Set ${index + 1}</strong>
+          <span>${set.reps} reps × ${set.weight} kg</span>
+          <span>Set ID: ${set.id}</span>
+        </div>
+        <div class="actions">
+          ${statusBadge}
+          ${!set.completed ? `<button class="btn btn-primary" data-complete-id="${set.id}">Complete</button>` : ''}
+        </div>
+      `;
+
+          setsBlock.appendChild(row);
+        });
+
+        setsContainer.appendChild(wrapper);
       });
 
       document.querySelectorAll('[data-complete-id]').forEach(button => {

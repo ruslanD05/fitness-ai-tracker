@@ -10,7 +10,7 @@ public record ExerciseProgressionRecommendation(
         boolean increaseReps,
         boolean keepSame,
         boolean straightSets,
-        String targetRepRange,
+        int targetReps,
         String reason
 ) {
     public boolean isStable() {

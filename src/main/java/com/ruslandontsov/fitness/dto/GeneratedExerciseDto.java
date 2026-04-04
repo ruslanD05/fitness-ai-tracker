@@ -5,7 +5,7 @@ public record GeneratedExerciseDto(
         String exerciseName,
         int sets,
         double suggestedWeight,
-        String targetRepRange,
+        int targetReps,
         int restSeconds,
         String progressionReason
 ) {}

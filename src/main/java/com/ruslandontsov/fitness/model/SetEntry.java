@@ -19,6 +19,10 @@ public class SetEntry {
 
     private boolean completed = false;
 
+    private String repsSuggestion;
+
+    private int rest;
+
     @ManyToOne
     @JoinColumn(name = "workout_id")
     private Workout workout;

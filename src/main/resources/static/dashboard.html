@@ -233,6 +233,30 @@
         .status.error { color: #fca5a5; }
         .status.success { color: #86efac; }
 
+        .status-with-dot {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .status-dot.complete {
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+        }
+
+        .status-dot.incomplete {
+            background: #eab308;
+            box-shadow: 0 0 8px rgba(234, 179, 8, 0.45);
+        }
+
         .user-card {
             background: var(--panel-2);
             border: 1px solid var(--border);
@@ -267,6 +291,8 @@
                 align-items: flex-start;
             }
         }
+
+
     </style>
 </head>
 <body>
@@ -428,7 +454,35 @@
                 }
 
                 const workouts = await response.json();
-                allWorkouts = sortWorkoutsNewestFirst(workouts);
+
+                const workoutsWithStatus = await Promise.all(
+                    workouts.map(async function (workout) {
+                        try {
+                            const setsResponse = await fetch(`/api/workouts/${workout.id}/sets`, {
+                                headers: {
+                                    'Authorization': 'Bearer ' + token
+                                }
+                            });
+
+                            if (!setsResponse.ok) {
+                                return { ...workout, allSetsCompleted: false, setCount: 0 };
+                            }
+
+                            const sets = await setsResponse.json();
+                            const allSetsCompleted = Array.isArray(sets) && sets.length > 0 && sets.every(set => set.completed);
+
+                            return {
+                                ...workout,
+                                allSetsCompleted,
+                                setCount: Array.isArray(sets) ? sets.length : 0
+                            };
+                        } catch (_) {
+                            return { ...workout, allSetsCompleted: false, setCount: 0 };
+                        }
+                    })
+                );
+
+                allWorkouts = sortWorkoutsNewestFirst(workoutsWithStatus);
                 renderWorkouts(allWorkouts);
                 workoutStatus.textContent = '';
                 welcomeText.textContent = 'Welcome back';
@@ -458,7 +512,10 @@
                 return `
                     <div class="workout-item">
                         <div class="workout-meta">
-                            <strong>${nameText}</strong>
+                            <div class="status-with-dot">
+                                <span class="status-dot ${workout.allSetsCompleted ? 'complete' : 'incomplete'}"></span>
+                                <strong>${nameText}</strong>
+                            </div>
                             <span>${dateText}</span>
                         </div>
                         <div class="workout-actions">

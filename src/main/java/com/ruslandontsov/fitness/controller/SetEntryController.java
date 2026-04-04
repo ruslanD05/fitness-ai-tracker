@@ -25,6 +25,8 @@ public class SetEntryController {
             @PathVariable Long workoutId,
             @Valid @RequestBody CreateSetEntryRequest request
     ) {
+        request.repsSuggestion = "";
+        request.rest = 90;
         return setService.createSet(workoutId, request);
     }
 

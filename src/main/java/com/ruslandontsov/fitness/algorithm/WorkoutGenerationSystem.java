@@ -56,7 +56,7 @@ public class WorkoutGenerationSystem {
                         exercise.getName(),
                         sets,
                         progression.suggestedWeight(),
-                        progression.targetRepRange(),
+                        progression.targetReps(),
                         restSeconds,
                         progression.reason()
                 ));
