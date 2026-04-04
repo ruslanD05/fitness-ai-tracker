@@ -1,257 +1,488 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fitness AI Tracker - Recovery</title>
-    <style>
-        :root {
-            --bg: #0f172a;
-            --panel: #111827;
-            --panel-2: #1f2937;
-            --text: #e5e7eb;
-            --muted: #9ca3af;
-            --border: #374151;
-            --danger: #ef4444;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recovery | Fitness AI Tracker</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22c55e;
+      --accent-2: #16a34a;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --border: #374151;
+      --fresh: #22c55e;
+      --recovering: #f59e0b;
+      --sore: #ef4444;
+    }
 
-        * { box-sizing: border-box; }
+    * { box-sizing: border-box; }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(180deg, #0b1220 0%, var(--bg) 100%);
-            color: var(--text);
-        }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1220 0%, var(--bg) 100%);
+      color: var(--text);
+    }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 24px;
-        }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
 
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
 
-        .brand h1 {
-            margin: 0 0 6px;
-            font-size: 28px;
-        }
+    .topbar h1 {
+      margin: 0;
+      font-size: 28px;
+    }
 
-        .brand p {
-            margin: 0;
-            color: var(--muted);
-        }
+    .topbar p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
 
-        .topbar-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-        .btn {
-            border: none;
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .btn-secondary {
-            background: var(--panel-2);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
+    .btn-primary {
+      background: var(--accent);
+      color: #052e16;
+    }
 
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: #fecaca;
-            border: 1px solid rgba(239, 68, 68, 0.35);
-        }
+    .btn-primary:hover { background: var(--accent-2); }
 
-        .panel {
-            background: rgba(17, 24, 39, 0.92);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 22px;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
-        }
+    .btn-secondary {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
 
-        .status {
-            margin-bottom: 16px;
-            font-size: 14px;
-            min-height: 20px;
-            color: var(--muted);
-        }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fecaca;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
 
-        .status.error {
-            color: #fca5a5;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+    }
 
-        .recovery-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+    .panel {
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+    }
 
-        .recovery-item {
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px;
-            background: rgba(11, 18, 32, 0.7);
-        }
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
 
-        .recovery-item strong {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--muted);
-            font-size: 14px;
-        }
+    .panel-subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
 
-        .recovery-item span {
-            font-size: 18px;
-            font-weight: 700;
-        }
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      min-height: 20px;
+    }
 
-        .empty {
-            color: var(--muted);
-        }
+    .status.error { color: #fca5a5; }
+    .status.success { color: #86efac; }
 
-        @media (max-width: 700px) {
-            .recovery-list {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    .muscle-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .muscle-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .muscle-card-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .muscle-card-left strong {
+      font-size: 16px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      text-transform: capitalize;
+    }
+
+    .badge-fresh {
+      background: rgba(34, 197, 94, 0.15);
+      color: #86efac;
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+
+    .badge-recovering {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    .badge-sore {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .score-block {
+      min-width: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .progress {
+      width: 140px;
+      height: 10px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      transition: width 0.25s ease;
+    }
+
+    .progress-fresh { background: var(--fresh); }
+    .progress-recovering { background: var(--recovering); }
+    .progress-sore { background: var(--sore); }
+
+    .empty-state {
+      color: var(--muted);
+      text-align: center;
+      padding: 24px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    .suggestion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .suggestion-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .suggestion-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .dot-fresh { background: var(--fresh); }
+    .dot-recovering { background: var(--recovering); }
+    .dot-sore { background: var(--sore); }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-    <header class="topbar">
-        <div class="brand">
-            <h1>Recovery</h1>
-            <p>Your current recovery values.</p>
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login.html';
+    }
+  </script>
+
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1>Recovery</h1>
+        <p>See current muscle fatigue, recovery status, and next-muscle suggestions.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-secondary" href="/dashboard.html">← Back to dashboard</a>
+        <a class="btn btn-secondary" href="/generate-workout.html">Generate Workout</a>
+        <button class="btn btn-danger" id="logoutBtn" type="button">Log out</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Recovery map</h2>
+        <p class="panel-subtitle">Each muscle group shows a fatigue score from 0 to 1 and the current recovery status.</p>
+
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot dot-fresh"></span> Fresh</span>
+          <span class="legend-item"><span class="legend-dot dot-recovering"></span> Recovering</span>
+          <span class="legend-item"><span class="legend-dot dot-sore"></span> Sore</span>
         </div>
-        <div class="topbar-actions">
-            <a class="btn btn-secondary" href="/dashboard.html">Dashboard</a>
-            <a class="btn btn-secondary" href="/generate_workout.html">Generate Workout</a>
-            <button id="logoutBtn" class="btn btn-danger" type="button">Log out</button>
+
+        <div id="recoveryStatus" class="status"></div>
+        <div id="recoveryList" class="muscle-list">
+          <div class="empty-state">Loading recovery data...</div>
         </div>
-    </header>
+      </section>
 
-    <section class="panel">
-        <div id="statusBox" class="status">Loading recovery values...</div>
-        <div id="recoveryList" class="recovery-list"></div>
-    </section>
-</div>
+      <aside class="panel">
+        <h2>Suggested muscles</h2>
+        <p class="panel-subtitle">Ordered suggestions from the recommendation system, based on current recovery.</p>
 
-<script>
-    (function () {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = '/login.html';
-            return;
-        }
+        <button class="btn btn-primary" id="refreshBtn" type="button">Refresh recovery</button>
+        <div id="suggestStatus" class="status"></div>
+        <div id="suggestionList" class="suggestion-list">
+          <div class="empty-state">Loading suggestions...</div>
+        </div>
+      </aside>
+    </div>
+  </main>
 
-        const logoutBtn = document.getElementById('logoutBtn');
-        const statusBox = document.getElementById('statusBox');
-        const recoveryList = document.getElementById('recoveryList');
+  <script>
+    const recoveryList = document.getElementById('recoveryList');
+    const recoveryStatus = document.getElementById('recoveryStatus');
+    const suggestionList = document.getElementById('suggestionList');
+    const suggestStatus = document.getElementById('suggestStatus');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-        logoutBtn.addEventListener('click', function () {
-            localStorage.removeItem('token');
-            window.location.href = '/login.html';
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
+    });
+
+    refreshBtn.addEventListener('click', async () => {
+      await Promise.all([loadRecovery(), loadSuggestions()]);
+    });
+
+    function authHeaders(extra = {}) {
+      return {
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        ...extra
+      };
+    }
+
+    function setMessage(el, text, type = '') {
+      el.textContent = text;
+      el.className = `status ${type}`.trim();
+    }
+
+    async function loadRecovery() {
+      recoveryList.innerHTML = '<div class="empty-state">Loading recovery data...</div>';
+      setMessage(recoveryStatus, 'Loading recovery data...');
+
+      try {
+        const response = await fetch('/api/recovery', {
+          headers: authHeaders()
         });
 
-        loadRecovery();
+        const data = await response.json().catch(() => []);
 
-        async function loadRecovery() {
-            try {
-                const response = await fetch('/api/recovery/latest', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                });
-
-                if (response.status === 404) {
-                    statusBox.textContent = 'No recovery values found.';
-                    recoveryList.innerHTML = '<div class="empty">Nothing to display yet.</div>';
-                    return;
-                }
-
-                if (!response.ok) {
-                    throw new Error('Failed to load recovery values.');
-                }
-
-                const recovery = await response.json();
-                renderRecovery(recovery);
-
-                statusBox.textContent = 'Recovery values loaded.';
-            } catch (error) {
-                statusBox.textContent = error.message || 'Something went wrong.';
-                statusBox.className = 'status error';
-                recoveryList.innerHTML = '';
-            }
+        if (!response.ok) {
+          const errorText = data.message || data.error || 'Failed to load recovery data';
+          throw new Error(errorText);
         }
 
-        function renderRecovery(recovery) {
-            const entries = Object.entries(recovery || {});
-
-            if (entries.length === 0) {
-                recoveryList.innerHTML = '<div class="empty">No recovery values available.</div>';
-                return;
-            }
-
-            recoveryList.innerHTML = entries.map(function ([key, value]) {
-                return `
-                    <div class="recovery-item">
-                        <strong>${escapeHtml(formatLabel(key))}</strong>
-                        <span>${escapeHtml(formatValue(value))}</span>
-                    </div>
-                `;
-            }).join('');
+        if (!Array.isArray(data) || data.length === 0) {
+          recoveryList.innerHTML = '<div class="empty-state">No recovery data found.</div>';
+          setMessage(recoveryStatus, '');
+          return;
         }
 
-        function formatLabel(key) {
-            return key
-                .replace(/([A-Z])/g, ' $1')
-                .replace(/^./, function (char) { return char.toUpperCase(); });
+        renderRecovery(data);
+        setMessage(recoveryStatus, '');
+      } catch (error) {
+        recoveryList.innerHTML = '<div class="empty-state">Could not load recovery data.</div>';
+        setMessage(recoveryStatus, error.message || 'Could not load recovery data', 'error');
+      }
+    }
+
+    function renderRecovery(items) {
+      recoveryList.innerHTML = items.map(item => {
+        const muscleGroup = escapeHtml(formatLabel(item.muscleGroup || 'UNKNOWN'));
+        const score = Number(item.fatigueScore || 0);
+        const clampedScore = Math.max(0, Math.min(score, 1));
+        const percent = Math.round(clampedScore * 100);
+        const status = (item.status || 'recovering').toLowerCase();
+
+        const badgeClass = status === 'fresh'
+          ? 'badge-fresh'
+          : status === 'sore'
+            ? 'badge-sore'
+            : 'badge-recovering';
+
+        const progressClass = status === 'fresh'
+          ? 'progress-fresh'
+          : status === 'sore'
+            ? 'progress-sore'
+            : 'progress-recovering';
+
+        return `
+          <div class="muscle-card">
+            <div class="muscle-card-left">
+              <strong>${muscleGroup}</strong>
+              <span class="muted">Fatigue score: ${clampedScore.toFixed(2)}</span>
+            </div>
+            <div class="score-block">
+              <span class="badge ${badgeClass}">${escapeHtml(status)}</span>
+              <div class="progress">
+                <div class="progress-bar ${progressClass}" style="width: ${percent}%;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadSuggestions() {
+      suggestionList.innerHTML = '<div class="empty-state">Loading suggestions...</div>';
+      setMessage(suggestStatus, 'Loading suggestions...');
+
+      try {
+        const response = await fetch('/api/recovery/suggest', {
+          headers: authHeaders()
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          const errorText = data?.message || data?.error || 'Failed to load suggestions';
+          throw new Error(errorText);
         }
 
-        function formatValue(value) {
-            if (value === null || typeof value === 'undefined' || value === '') {
-                return '-';
-            }
+        renderSuggestions(data);
+        setMessage(suggestStatus, '');
+      } catch (error) {
+        suggestionList.innerHTML = '<div class="empty-state">Could not load suggestions.</div>';
+        setMessage(suggestStatus, error.message || 'Could not load suggestions', 'error');
+      }
+    }
 
-            if (Array.isArray(value)) {
-                return value.length ? value.join(', ') : '-';
-            }
+    function renderSuggestions(data) {
+      const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
 
-            if (typeof value === 'object') {
-                return JSON.stringify(value);
-            }
+      if (suggestions.length === 0) {
+        suggestionList.innerHTML = '<div class="empty-state">No suggestion data available.</div>';
+        return;
+      }
 
-            return String(value);
-        }
+      suggestionList.innerHTML = suggestions.map((suggestion, index) => `
+        <div class="suggestion-card">
+          <strong>#${index + 1} ${escapeHtml(formatLabel(suggestion.muscleGroup || 'UNKNOWN'))}</strong>
+          <span class="muted">${escapeHtml(suggestion.reason || 'No reason available')}</span>
+        </div>
+      `).join('');
+    }
 
-        function escapeHtml(value) {
-            return String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-    })();
-</script>
+    function formatLabel(value) {
+      return String(value)
+        .toLowerCase()
+        .split('_')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    Promise.all([loadRecovery(), loadSuggestions()]);
+  </script>
 </body>
 </html>
