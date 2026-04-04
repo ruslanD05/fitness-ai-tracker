@@ -5,8 +5,10 @@ import com.ruslandontsov.fitness.dto.CreateWorkoutRequest;
 import com.ruslandontsov.fitness.dto.GeneratedExerciseDto;
 import com.ruslandontsov.fitness.dto.GeneratedWorkoutResponse;
 import com.ruslandontsov.fitness.exception.ResourceNotFoundException;
+import com.ruslandontsov.fitness.model.SetEntry;
 import com.ruslandontsov.fitness.model.User;
 import com.ruslandontsov.fitness.model.Workout;
+import com.ruslandontsov.fitness.repository.SetEntryRepository;
 import com.ruslandontsov.fitness.repository.UserRepository;
 import com.ruslandontsov.fitness.repository.WorkoutRepository;
 import org.springframework.stereotype.Service;
@@ -21,11 +23,13 @@ public class WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final UserRepository userRepository;
     private final SetEntryService setEntryService;
+    private final SetEntryRepository setEntryRepository;
 
-    public WorkoutService(WorkoutRepository workoutRepository, UserRepository userRepository, SetEntryService setEntryService) {
+    public WorkoutService(WorkoutRepository workoutRepository, UserRepository userRepository, SetEntryService setEntryService, SetEntryRepository setEntryRepository) {
         this.workoutRepository = workoutRepository;
         this.userRepository = userRepository;
         this.setEntryService = setEntryService;
+        this.setEntryRepository = setEntryRepository;
     }
 
     public Workout createWorkout(Long userId, CreateWorkoutRequest request) {
@@ -44,10 +48,10 @@ public class WorkoutService {
 
         Workout workout = new Workout();
         workout.setUser(user);
-        workout.setName("Generated_workout_" + workout.getId());
         workout.setDate(LocalDate.now());
-
         Workout workoutS = workoutRepository.save(workout);
+
+        workoutS.setName("Generated_workout_" + workoutS.getId());
 
         for (GeneratedExerciseDto exercise : request.exercises()){
             for (int set = 0;set < exercise.sets();set++) {
@@ -67,6 +71,8 @@ public class WorkoutService {
         Workout workout = workoutRepository.findByIdAndUserId(workoutId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Workout not found"));
 
+        List<SetEntry> setsOfWorkout = setEntryRepository.findByWorkoutId(workoutId);
+        setEntryRepository.deleteAll(setsOfWorkout);
         workoutRepository.delete(workout);
     }
 

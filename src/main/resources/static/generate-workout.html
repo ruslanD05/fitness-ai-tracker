@@ -70,12 +70,17 @@
             justify-content: center;
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .btn-primary {
             background: var(--accent);
             color: #052e16;
         }
 
-        .btn-primary:hover { background: var(--accent-2); }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
 
         .btn-secondary {
             background: var(--panel-2);
@@ -191,6 +196,13 @@
             margin-top: 4px;
         }
 
+        .preview-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
         @media (max-width: 860px) {
             .grid {
                 grid-template-columns: 1fr;
@@ -203,7 +215,7 @@
     <header class="topbar">
         <div class="brand">
             <h1>Generate Workout</h1>
-            <p>Build a workout from recovery and progression data, then save it as a real workout.</p>
+            <p>Build a workout from recovery and progression data, preview it, then start when ready.</p>
         </div>
         <div class="topbar-actions">
             <a class="btn btn-secondary" href="/dashboard.html">Dashboard</a>
@@ -225,11 +237,10 @@
                     <textarea id="textRequest" placeholder="Example: short upper body workout, avoid heavy lower back, more chest focus"></textarea>
                 </div>
 
-                <button class="btn btn-primary" type="submit">Generate workout</button>
+                <button id="generateBtn" class="btn btn-primary" type="submit">Generate workout</button>
             </form>
 
             <div id="generateStatus" class="status"></div>
-
         </section>
 
         <aside class="panel">
@@ -237,6 +248,11 @@
                 <h2>Preview</h2>
                 <p id="previewMeta">No generated workout yet.</p>
                 <div id="previewExercises" class="exercise-list"></div>
+
+                <div class="preview-actions">
+                    <button id="regenerateBtn" class="btn btn-secondary" type="button" disabled>Generate again</button>
+                    <button id="startWorkoutBtn" class="btn btn-primary" type="button" disabled>Start workout</button>
+                </div>
             </div>
         </aside>
     </div>
@@ -252,9 +268,16 @@
 
         const logoutBtn = document.getElementById('logoutBtn');
         const form = document.getElementById('generateWorkoutForm');
+        const generateBtn = document.getElementById('generateBtn');
+        const regenerateBtn = document.getElementById('regenerateBtn');
+        const startWorkoutBtn = document.getElementById('startWorkoutBtn');
         const statusBox = document.getElementById('generateStatus');
         const previewMeta = document.getElementById('previewMeta');
         const previewExercises = document.getElementById('previewExercises');
+
+        let latestGeneratedWorkout = null;
+        let isGenerating = false;
+        let isStartingWorkout = false;
 
         logoutBtn.addEventListener('click', function () {
             localStorage.removeItem('token');
@@ -263,8 +286,19 @@
 
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
-            statusBox.textContent = 'Generating workout...';
-            statusBox.className = 'status';
+            await generateWorkout();
+        });
+
+        regenerateBtn.addEventListener('click', async function () {
+            await generateWorkout();
+        });
+
+        startWorkoutBtn.addEventListener('click', async function () {
+            await startWorkout();
+        });
+
+        async function generateWorkout() {
+            if (isGenerating || isStartingWorkout) return;
 
             const durationMinutes = Number(document.getElementById('durationMinutes').value);
             const textRequest = document.getElementById('textRequest').value.trim();
@@ -275,6 +309,13 @@
                 return;
             }
 
+            isGenerating = true;
+            latestGeneratedWorkout = null;
+            updateButtons();
+
+            statusBox.textContent = 'Generating workout preview...';
+            statusBox.className = 'status';
+
             try {
                 const generateResponse = await fetch('/api/workout-generation/generate', {
                     method: 'POST',
@@ -283,7 +324,8 @@
                         'Authorization': 'Bearer ' + token
                     },
                     body: JSON.stringify({
-                        workoutDuration: durationMinutes
+                        workoutDuration: durationMinutes,
+                        textRequest: textRequest
                     })
                 });
 
@@ -293,18 +335,46 @@
                 }
 
                 const generatedWorkout = await generateResponse.json();
+                latestGeneratedWorkout = generatedWorkout;
+
                 renderPreview(generatedWorkout, textRequest);
 
-                statusBox.textContent = 'Workout generated. Saving workout...';
-                statusBox.className = 'status';
+                statusBox.textContent = 'Workout preview ready. Click "Start workout" to save and begin, or "Generate again" to try another version.';
+                statusBox.className = 'status success';
+            } catch (error) {
+                latestGeneratedWorkout = null;
+                clearPreview();
+                statusBox.textContent = error.message || 'Something went wrong.';
+                statusBox.className = 'status error';
+            } finally {
+                isGenerating = false;
+                updateButtons();
+            }
+        }
 
+        async function startWorkout() {
+            if (isGenerating || isStartingWorkout) return;
+
+            if (!latestGeneratedWorkout) {
+                statusBox.textContent = 'Generate a workout first.';
+                statusBox.className = 'status error';
+                return;
+            }
+
+            isStartingWorkout = true;
+            updateButtons();
+
+            statusBox.textContent = 'Saving workout and opening it...';
+            statusBox.className = 'status';
+
+            try {
                 const createResponse = await fetch('/api/workouts/create_generated_workout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
-                    body: JSON.stringify(generatedWorkout)
+                    body: JSON.stringify(latestGeneratedWorkout)
                 });
 
                 if (!createResponse.ok) {
@@ -322,14 +392,26 @@
                 statusBox.textContent = 'Workout created successfully. Opening workout...';
                 statusBox.className = 'status success';
 
-                setTimeout(function () {
-                    window.location.href = '/workout.html?workoutId=' + workoutId;
-                }, 500);
+                window.location.href = '/workout.html?workoutId=' + encodeURIComponent(workoutId);
             } catch (error) {
                 statusBox.textContent = error.message || 'Something went wrong.';
                 statusBox.className = 'status error';
+            } finally {
+                isStartingWorkout = false;
+                updateButtons();
             }
-        });
+        }
+
+        function updateButtons() {
+            generateBtn.disabled = isGenerating || isStartingWorkout;
+            regenerateBtn.disabled = isGenerating || isStartingWorkout;
+            startWorkoutBtn.disabled = isGenerating || isStartingWorkout || !latestGeneratedWorkout;
+        }
+
+        function clearPreview() {
+            previewMeta.textContent = 'No generated workout yet.';
+            previewExercises.innerHTML = '';
+        }
 
         function renderPreview(workout, textRequest) {
             const muscles = Array.isArray(workout.selectedMuscleGroups)
@@ -348,7 +430,7 @@
 
             previewMeta.textContent =
                 `Muscles: ${muscles} • ${durationText} • ${estimatedText} • ${exerciseCount} exercise(s)` +
-                (textRequest ? ` • Request noted: "${textRequest}"` : '');
+                (textRequest ? ` • Request: "${textRequest}"` : '');
 
             if (!Array.isArray(workout.exercises) || workout.exercises.length === 0) {
                 previewExercises.innerHTML = '<div class="helper">No exercises returned.</div>';

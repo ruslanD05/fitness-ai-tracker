@@ -73,7 +73,7 @@ public class WorkoutGenerationSystem {
             }
         }
 
-        int estimatedUsedSeconds = durationMinutes * 60 - remainingSeconds;
+        int estimatedUsedSeconds = durationMinutes * 60;
 
         return new GeneratedWorkoutResponse(
                 selectedGroups,
