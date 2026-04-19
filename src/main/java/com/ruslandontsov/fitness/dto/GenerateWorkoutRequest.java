@@ -1,9 +1,11 @@
 package com.ruslandontsov.fitness.dto;
 
-import jakarta.validation.constraints.NotNull;
+
 import jakarta.validation.constraints.Positive;
 
 public class GenerateWorkoutRequest {
     @Positive
     public int workoutDuration;
+
+    public String textRequest;
 }

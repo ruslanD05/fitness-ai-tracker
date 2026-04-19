@@ -4,6 +4,7 @@ import com.ruslandontsov.fitness.dto.ExerciseProgressionRecommendation;
 import com.ruslandontsov.fitness.algorithm.ExerciseProgressionSystem;
 import com.ruslandontsov.fitness.algorithm.WorkoutGenerationSystem;
 import com.ruslandontsov.fitness.dto.GeneratedWorkoutResponse;
+import com.ruslandontsov.fitness.dto.MuscleSuggestionDto;
 import com.ruslandontsov.fitness.dto.SuggestionResponseDto;
 import com.ruslandontsov.fitness.model.ExerciseType;
 import com.ruslandontsov.fitness.model.MuscleGroup;
@@ -42,12 +43,33 @@ public class WorkoutGenerationService {
     }
 
     public GeneratedWorkoutResponse generateWorkout(User user, int durationMinutes) {
-        SuggestionResponseDto suggestions = muscleRecoveryService.getSuggestionForUser(user);
+        return generateWorkout(user, durationMinutes, null);
+    }
 
+    public GeneratedWorkoutResponse generateWorkout(
+            User user,
+            int durationMinutes,
+            List<MuscleGroup> preferredMuscleGroups
+    ) {
         Map<MuscleGroup, List<ExerciseType>> exercisesByMuscle = new HashMap<>();
         Map<Long, ExerciseProgressionRecommendation> progressionByExerciseId = new HashMap<>();
 
-        for (var suggestion : suggestions.suggestions()) {
+        SuggestionResponseDto suggestions;
+
+        if (preferredMuscleGroups == null || preferredMuscleGroups.isEmpty()) {
+            suggestions = muscleRecoveryService.getSuggestionForUser(user);
+        } else {
+            List<MuscleSuggestionDto> preferredSuggestions = preferredMuscleGroups.stream()
+                    .map(group -> new MuscleSuggestionDto(
+                            group,
+                            "User explicitly requested this muscle group"
+                    ))
+                    .toList();
+
+            suggestions = new SuggestionResponseDto(preferredSuggestions);
+        }
+
+        for (MuscleSuggestionDto suggestion : suggestions.suggestions()) {
             MuscleGroup group = suggestion.muscleGroup();
 
             List<ExerciseType> exercises = exerciseTypeRepository.findByPrimaryMuscleGroup(group);
