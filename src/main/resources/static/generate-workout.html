@@ -80,7 +80,9 @@
             color: #052e16;
         }
 
-        .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-2);
+        }
 
         .btn-secondary {
             background: var(--panel-2);
@@ -233,7 +235,7 @@
                 </div>
 
                 <div>
-                    <label for="textRequest">Text request (for future AI version)</label>
+                    <label for="textRequest">Text request</label>
                     <textarea id="textRequest" placeholder="Example: short upper body workout, avoid heavy lower back, more chest focus"></textarea>
                 </div>
 
@@ -241,12 +243,17 @@
             </form>
 
             <div id="generateStatus" class="status"></div>
+            <p class="helper">
+                If text request is empty, deterministic generation is used. If text is provided, AI-assisted generation is used.
+            </p>
         </section>
 
         <aside class="panel">
             <div class="preview-box">
                 <h2>Preview</h2>
                 <p id="previewMeta">No generated workout yet.</p>
+                <p id="summaryBox" class="status"></p>
+                <p id="warningBox" class="status error"></p>
                 <div id="previewExercises" class="exercise-list"></div>
 
                 <div class="preview-actions">
@@ -274,6 +281,8 @@
         const statusBox = document.getElementById('generateStatus');
         const previewMeta = document.getElementById('previewMeta');
         const previewExercises = document.getElementById('previewExercises');
+        const summaryBox = document.getElementById('summaryBox');
+        const warningBox = document.getElementById('warningBox');
 
         let latestGeneratedWorkout = null;
         let isGenerating = false;
@@ -309,37 +318,43 @@
                 return;
             }
 
+            const endpoint = textRequest
+                ? '/api/ai/generate-workout'
+                : '/api/workout-generation/generate';
+
+            const body = textRequest
+                ? { workoutDuration: durationMinutes, textRequest: textRequest }
+                : { workoutDuration: durationMinutes };
+
             isGenerating = true;
             latestGeneratedWorkout = null;
+            clearPreview();
             updateButtons();
 
             statusBox.textContent = 'Generating workout preview...';
             statusBox.className = 'status';
 
             try {
-                const generateResponse = await fetch('/api/workout-generation/generate', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
-                    body: JSON.stringify({
-                        workoutDuration: durationMinutes,
-                        textRequest: textRequest
-                    })
+                    body: JSON.stringify(body)
                 });
 
-                if (!generateResponse.ok) {
-                    const errorData = await tryReadJson(generateResponse);
+                if (!response.ok) {
+                    const errorData = await tryReadJson(response);
                     throw new Error(readErrorMessage(errorData, 'Failed to generate workout'));
                 }
 
-                const generatedWorkout = await generateResponse.json();
+                const generatedWorkout = await response.json();
                 latestGeneratedWorkout = generatedWorkout;
 
                 renderPreview(generatedWorkout, textRequest);
 
-                statusBox.textContent = 'Workout preview ready. Click "Start workout" to save and begin, or "Generate again" to try another version.';
+                statusBox.textContent = 'Workout preview ready. Click "Start workout" to save and begin.';
                 statusBox.className = 'status success';
             } catch (error) {
                 latestGeneratedWorkout = null;
@@ -368,7 +383,7 @@
             statusBox.className = 'status';
 
             try {
-                const createResponse = await fetch('/api/workouts/create_generated_workout', {
+                const response = await fetch('/api/workouts/create_generated_workout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -377,20 +392,17 @@
                     body: JSON.stringify(latestGeneratedWorkout)
                 });
 
-                if (!createResponse.ok) {
-                    const errorData = await tryReadJson(createResponse);
+                if (!response.ok) {
+                    const errorData = await tryReadJson(response);
                     throw new Error(readErrorMessage(errorData, 'Failed to save generated workout'));
                 }
 
-                const createdWorkout = await createResponse.json();
+                const createdWorkout = await response.json();
                 const workoutId = createdWorkout.workoutId || createdWorkout.id;
 
                 if (!workoutId) {
                     throw new Error('Workout was saved, but no workout id was returned');
                 }
-
-                statusBox.textContent = 'Workout created successfully. Opening workout...';
-                statusBox.className = 'status success';
 
                 window.location.href = '/workout.html?workoutId=' + encodeURIComponent(workoutId);
             } catch (error) {
@@ -411,6 +423,10 @@
         function clearPreview() {
             previewMeta.textContent = 'No generated workout yet.';
             previewExercises.innerHTML = '';
+            summaryBox.textContent = '';
+            summaryBox.className = 'status';
+            warningBox.textContent = '';
+            warningBox.className = 'status error';
         }
 
         function renderPreview(workout, textRequest) {
@@ -432,6 +448,22 @@
                 `Muscles: ${muscles} • ${durationText} • ${estimatedText} • ${exerciseCount} exercise(s)` +
                 (textRequest ? ` • Request: "${textRequest}"` : '');
 
+            if (workout.aiSummary) {
+                summaryBox.textContent = workout.aiSummary;
+                summaryBox.className = 'status success';
+            } else {
+                summaryBox.textContent = '';
+                summaryBox.className = 'status';
+            }
+
+            if (workout.warning) {
+                warningBox.textContent = workout.warning;
+                warningBox.className = 'status error';
+            } else {
+                warningBox.textContent = '';
+                warningBox.className = 'status error';
+            }
+
             if (!Array.isArray(workout.exercises) || workout.exercises.length === 0) {
                 previewExercises.innerHTML = '<div class="helper">No exercises returned.</div>';
                 return;
@@ -445,7 +477,7 @@
                 return `
                     <div class="exercise-card">
                         <strong>${escapeHtml(exercise.exerciseName || 'Unnamed exercise')}</strong>
-                        <span>Sets: ${exercise.sets ?? '-'} • Reps: ${escapeHtml(exercise.targetRepRange || '-')}</span>
+                        <span>Sets: ${exercise.sets ?? '-'} • Reps: ${escapeHtml(exercise.targetReps ?? '-')}</span>
                         <span>Weight: ${escapeHtml(weightText)} • Rest: ${exercise.restSeconds ?? '-'} sec</span>
                         <span>${escapeHtml(exercise.progressionReason || '')}</span>
                     </div>
@@ -475,6 +507,8 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
+
+        updateButtons();
     })();
 </script>
 </body>

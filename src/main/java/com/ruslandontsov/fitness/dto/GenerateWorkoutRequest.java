@@ -6,4 +6,6 @@ import jakarta.validation.constraints.Positive;
 public class GenerateWorkoutRequest {
     @Positive
     public int workoutDuration;
+
+    public String textRequest;
 }
