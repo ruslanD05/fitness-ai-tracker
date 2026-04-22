@@ -35,8 +35,6 @@ public class GeminiService {
         this.apiKey = apiKey;
     }
 
-    // ── Call 1: intent extraction (cheap) ───────────────────────────────────
-
     /**
      * Classifies the user's request into MUSCLE_CHANGE or TWEAK.
      * If MUSCLE_CHANGE, also extracts which muscle groups they want.
@@ -71,12 +69,9 @@ public class GeminiService {
             String json = callGemini(prompt);
             return objectMapper.readValue(json, WorkoutIntent.class);
         } catch (JsonProcessingException e) {
-            // If parsing fails, default to TWEAK — safer fallback
             return new WorkoutIntent(WorkoutIntent.Mode.TWEAK, List.of());
         }
     }
-
-    // ── Call 2a: MUSCLE_CHANGE — assemble from deterministic catalogue ───────
 
     /**
      * User wants different muscle groups. The deterministic system has already
@@ -142,8 +137,6 @@ public class GeminiService {
         }
     }
 
-    // ── Call 2b: TWEAK — adjust the existing workout freely ─────────────────
-
     /**
      * User wants to tweak the existing workout (exercises, weight, sets, etc.).
      * Gemini works freely within the already-generated workout.
@@ -201,7 +194,6 @@ public class GeminiService {
         }
     }
 
-    // ── Shared HTTP call ─────────────────────────────────────────────────────
 
     private String callGemini(String prompt) {
         Map<String, Object> requestBody = Map.of(
@@ -247,8 +239,6 @@ public class GeminiService {
 
         return text;
     }
-
-    // ── Response records ─────────────────────────────────────────────────────
 
     public record GeminiResponse(List<GeminiCandidate> candidates) {}
     public record GeminiCandidate(GeminiContent content) {}

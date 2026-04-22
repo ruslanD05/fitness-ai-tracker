@@ -35,15 +35,12 @@ public class AiWorkoutService {
         }
 
         try {
-            // Call 1 — classify intent (cheap)
             WorkoutIntent intent = geminiService.extractIntent(request.textRequest);
 
             if (intent.mode() == WorkoutIntent.Mode.MUSCLE_CHANGE
                     && intent.requestedMuscleGroups() != null
                     && !intent.requestedMuscleGroups().isEmpty()) {
 
-                // MUSCLE_CHANGE: run deterministic for the requested groups,
-                // then let Gemini assemble the final workout from those exercises
                 GeneratedWorkoutResponse deterministicForGroups =
                         workoutGenerationService.generateWorkout(
                                 user,
@@ -54,7 +51,6 @@ public class AiWorkoutService {
                 Map<MuscleGroup, List<ExerciseProgressionRecommendation>> catalogue =
                         workoutGenerationService.loadCatalogueForGroups(user, intent.requestedMuscleGroups());
 
-                // Call 2a — assemble using catalogue + deterministic proposal
                 return geminiService.assembleWorkout(
                         deterministicForGroups,
                         catalogue,
@@ -63,11 +59,9 @@ public class AiWorkoutService {
                 );
 
             } else {
-                // TWEAK: run deterministic normally, let Gemini adjust it
                 GeneratedWorkoutResponse deterministic =
                         workoutGenerationService.generateWorkout(user, request.workoutDuration);
 
-                // Call 2b — tailor the existing workout
                 return geminiService.tailorWorkout(deterministic, request.textRequest);
             }
 
