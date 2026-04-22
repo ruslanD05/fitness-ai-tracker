@@ -1,7 +1,7 @@
 package com.ruslandontsov.fitness.repository;
 
 import com.ruslandontsov.fitness.model.SetEntry;
-import com.ruslandontsov.fitness.model.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +32,19 @@ public interface SetEntryRepository extends JpaRepository<SetEntry, Long> {
     Double findAverageLoadByUserAndExerciseType(
             @Param("userId") Long userId,
             @Param("exerciseTypeId") Long exerciseTypeId
+    );
+
+    @Query("""
+        select se
+        from SetEntry se
+        where se.workout.user.id = :userId
+          and se.exerciseType.id = :exerciseTypeId
+          and se.completed = true
+        order by se.workout.date desc, se.id desc
+    """)
+    List<SetEntry> findRecentCompletedSetsByUserAndExerciseType(
+            @Param("userId") Long userId,
+            @Param("exerciseTypeId") Long exerciseTypeId,
+            Pageable pageable
     );
 }

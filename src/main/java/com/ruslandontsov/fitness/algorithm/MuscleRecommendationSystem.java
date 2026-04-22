@@ -34,7 +34,7 @@ public class MuscleRecommendationSystem {
         relativeLoad = Math.min(relativeLoad, 1.5);
         double experienceMultiplier = getExperienceMultiplier(user.getExperienceLevel());
 
-        return relativeLoad * experienceMultiplier;
+        return relativeLoad * experienceMultiplier * setEntry.getExerciseType().getRecoveryImpactMultiplier();
     }
 
     private double applyDecay(double fatigueScore, LocalDate lastUpdatedDate) {
@@ -87,10 +87,11 @@ public class MuscleRecommendationSystem {
         }
     }
 
-    public Optional<MuscleRecovery> suggestNextMuscle(List<MuscleRecovery> recoveries) {
+    public List<MuscleRecovery> suggestNextMuscles(List<MuscleRecovery> recoveries) {
         return recoveries.stream()
                 .filter(r -> getCurrentFatigue(r) < SORE_THRESHOLD)
-                .min(Comparator.comparingDouble(this::getCurrentFatigue));
+                .sorted(Comparator.comparingDouble(this::getCurrentFatigue))
+                .toList();
     }
 
     public String buildSuggestionReason(MuscleRecovery recovery) {

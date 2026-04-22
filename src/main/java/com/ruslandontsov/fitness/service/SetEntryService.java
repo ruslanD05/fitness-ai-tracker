@@ -46,6 +46,8 @@ public class SetEntryService {
         set.setWeight(request.weight);
         set.setExerciseType(exercise);
         set.setWorkout(workout);
+        set.setRest(request.rest);
+        set.setRepsSuggestion(request.repsSuggestion);
 
         return setRepository.save(set);
     }

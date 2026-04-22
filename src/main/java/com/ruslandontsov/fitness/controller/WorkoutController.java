@@ -1,6 +1,7 @@
 package com.ruslandontsov.fitness.controller;
 
 import com.ruslandontsov.fitness.dto.CreateWorkoutRequest;
+import com.ruslandontsov.fitness.dto.GeneratedWorkoutResponse;
 import com.ruslandontsov.fitness.model.SetEntry;
 import com.ruslandontsov.fitness.model.Workout;
 import com.ruslandontsov.fitness.service.SetEntryService;
@@ -34,6 +35,11 @@ public class WorkoutController {
         return setEntryService.getSetsByWorkout(workoutId);
     }
 
+    @DeleteMapping("/{workoutId}/delete")
+    public void deleteWorkout(@PathVariable Long workoutId) {
+        workoutService.deleteWorkout(userService.getCurrentUserId(), workoutId);
+    }
+
     @GetMapping
     public List<Workout> getUserWorkouts() {
         return workoutService.getWorkoutsByUser(userService.getCurrentUserId());
@@ -45,5 +51,12 @@ public class WorkoutController {
     ) {
         Long userId = userService.getCurrentUserId();
         return workoutService.createWorkout(userId, request);
+    }
+    @PostMapping("create_generated_workout")
+    public Workout createWorkoutGeneratedWorkout(
+            @Valid @RequestBody GeneratedWorkoutResponse request
+    ) {
+        Long userId = userService.getCurrentUserId();
+        return workoutService.createGeneratedWorkout(userId, request);
     }
 }
