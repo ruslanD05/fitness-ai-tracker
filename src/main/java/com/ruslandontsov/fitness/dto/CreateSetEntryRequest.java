@@ -13,4 +13,8 @@ public class CreateSetEntryRequest {
 
     @Positive(message = "Exercise type id must be positive")
     public long exerciseTypeId;
+
+    public int rest;
+
+    public String repsSuggestion;
 }

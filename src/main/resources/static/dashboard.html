@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fitness AI Tracker - Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #111827;
+            --panel-2: #1f2937;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --accent: #22c55e;
+            --accent-2: #16a34a;
+            --danger: #ef4444;
+            --border: #374151;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, #0b1220 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .brand p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #052e16;
+        }
+
+        .btn-primary:hover { background: var(--accent-2); }
+
+        .btn-secondary {
+            background: var(--panel-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #273548;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fecaca;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.22);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: rgba(17, 24, 39, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .panel-subtitle {
+            margin: 0 0 18px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .quick-link {
+            display: block;
+            text-decoration: none;
+            color: var(--text);
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .quick-link strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .quick-link span {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #0b1220;
+            color: var(--text);
+        }
+
+        .workout-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .workout-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .workout-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .workout-meta strong {
+            font-size: 16px;
+        }
+
+        .workout-meta span {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .workout-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            color: var(--muted);
+            text-align: center;
+            padding: 20px 10px;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+        }
+
+        .status {
+            margin-top: 12px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .status.error { color: #fca5a5; }
+        .status.success { color: #86efac; }
+
+        .status-with-dot {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .status-dot.complete {
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+        }
+
+        .status-dot.incomplete {
+            background: #eab308;
+            box-shadow: 0 0 8px rgba(234, 179, 8, 0.45);
+        }
+
+        .user-card {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+
+        .user-card p {
+            margin: 6px 0;
+            color: var(--muted);
+        }
+
+        .small-note {
+            margin-top: 14px;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-links {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="topbar">
+        <div class="brand">
+            <h1>Dashboard</h1>
+            <p>Manage workouts, review recovery, and generate your next session.</p>
+        </div>
+        <div class="topbar-actions">
+            <a class="btn btn-secondary" href="/recovery.html">Recovery</a>
+            <a class="btn btn-secondary" href="/generate-workout.html">Generate Workout</a>
+            <button id="logoutBtn" class="btn btn-danger" type="button">Log out</button>
+        </div>
+    </header>
+
+    <main class="grid">
+        <section class="panel">
+            <h2>Your Workouts</h2>
+            <p class="panel-subtitle">Create a workout, then open it to log and complete sets.</p>
+
+            <div class="quick-links">
+                <a class="quick-link" href="/recovery.html">
+                    <strong>Recovery Overview</strong>
+                    <span>See fatigue scores and current recovery status by muscle group.</span>
+                </a>
+                <a class="quick-link" href="/generate-workout.html">
+                    <strong>Workout Generator</strong>
+                    <span>Build a deterministic workout from recovery and progression data.</span>
+                </a>
+            </div>
+
+            <div id="workoutStatus" class="status"></div>
+            <div id="workoutList" class="workout-list">
+                <div class="empty-state">Loading workouts...</div>
+            </div>
+            <div style="margin-top: 14px;">
+                <button id="toggleWorkoutsBtn" class="btn btn-secondary" type="button" style="display: none;">
+                    Show all workouts
+                </button>
+            </div>
+        </section>
+
+        <aside class="panel">
+            <h2>Create Workout</h2>
+            <p class="panel-subtitle">Start a workout session for today. The backend should set the date automatically.</p>
+
+            <div class="user-card">
+                <strong id="welcomeText">Welcome back</strong>
+                <p id="userInfoText">Your account is ready.</p>
+            </div>
+
+            <form id="createWorkoutForm">
+                <div>
+                    <label for="workoutName">Workout name</label>
+                    <input id="workoutName" name="workoutName" type="text" placeholder="Upper Body A" required />
+                </div>
+                <button class="btn btn-primary" type="submit">Create workout</button>
+            </form>
+            <div id="createWorkoutStatus" class="status"></div>
+
+            <p class="small-note">
+                Suggested next flow: create a workout, open it, add set entries, complete sets,
+                then check recovery or generate your next workout.
+            </p>
+        </aside>
+    </main>
+</div>
+
+<script>
+    (function () {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+            return;
+        }
+
+        const workoutList = document.getElementById('workoutList');
+        const workoutStatus = document.getElementById('workoutStatus');
+        const createWorkoutForm = document.getElementById('createWorkoutForm');
+        const createWorkoutStatus = document.getElementById('createWorkoutStatus');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const welcomeText = document.getElementById('welcomeText');
+        const userInfoText = document.getElementById('userInfoText');
+        const toggleWorkoutsBtn = document.getElementById('toggleWorkoutsBtn');
+
+        const WORKOUTS_PREVIEW_LIMIT = 6;
+        let allWorkouts = [];
+        let showAllWorkouts = false;
+
+        logoutBtn.addEventListener('click', function () {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        toggleWorkoutsBtn.addEventListener('click', function () {
+            showAllWorkouts = !showAllWorkouts;
+            renderWorkouts(allWorkouts);
+        });
+
+        createWorkoutForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            createWorkoutStatus.textContent = 'Creating workout...';
+            createWorkoutStatus.className = 'status';
+
+            const name = document.getElementById('workoutName').value.trim();
+            if (!name) {
+                createWorkoutStatus.textContent = 'Workout name is required.';
+                createWorkoutStatus.className = 'status error';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/workouts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ name })
+                });
+
+                if (!response.ok) {
+                    const errorData = await tryReadJson(response);
+                    throw new Error(readErrorMessage(errorData, 'Failed to create workout'));
+                }
+
+                const createdWorkout = await response.json();
+                createWorkoutStatus.textContent = 'Workout created successfully.';
+                createWorkoutStatus.className = 'status success';
+                createWorkoutForm.reset();
+                await loadWorkouts();
+
+                if (createdWorkout && createdWorkout.id) {
+                    setTimeout(function () {
+                        window.location.href = '/workout.html?workoutId=' + createdWorkout.id;
+                    }, 400);
+                }
+            } catch (error) {
+                createWorkoutStatus.textContent = error.message || 'Failed to create workout.';
+                createWorkoutStatus.className = 'status error';
+            }
+        });
+
+        async function loadWorkouts() {
+            workoutStatus.textContent = 'Loading workouts...';
+            workoutStatus.className = 'status';
+
+            try {
+                const response = await fetch('/api/workouts', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await tryReadJson(response);
+                    throw new Error(readErrorMessage(errorData, 'Failed to load workouts'));
+                }
+
+                const workouts = await response.json();
+
+                const workoutsWithStatus = await Promise.all(
+                    workouts.map(async function (workout) {
+                        try {
+                            const setsResponse = await fetch(`/api/workouts/${workout.id}/sets`, {
+                                headers: {
+                                    'Authorization': 'Bearer ' + token
+                                }
+                            });
+
+                            if (!setsResponse.ok) {
+                                return { ...workout, allSetsCompleted: false, setCount: 0 };
+                            }
+
+                            const sets = await setsResponse.json();
+                            const allSetsCompleted = Array.isArray(sets) && sets.length > 0 && sets.every(set => set.completed);
+
+                            return {
+                                ...workout,
+                                allSetsCompleted,
+                                setCount: Array.isArray(sets) ? sets.length : 0
+                            };
+                        } catch (_) {
+                            return { ...workout, allSetsCompleted: false, setCount: 0 };
+                        }
+                    })
+                );
+
+                allWorkouts = sortWorkoutsNewestFirst(workoutsWithStatus);
+                renderWorkouts(allWorkouts);
+                workoutStatus.textContent = '';
+                welcomeText.textContent = 'Welcome back';
+                userInfoText.textContent = allWorkouts.length + ' workout(s) found.';
+            } catch (error) {
+                workoutList.innerHTML = '<div class="empty-state">Could not load workouts.</div>';
+                workoutStatus.textContent = error.message || 'Could not load workouts.';
+                workoutStatus.className = 'status error';
+            }
+        }
+
+        function renderWorkouts(workouts) {
+            if (!Array.isArray(workouts) || workouts.length === 0) {
+                workoutList.innerHTML = '<div class="empty-state">No workouts yet. Create your first one on the right.</div>';
+                toggleWorkoutsBtn.style.display = 'none';
+                return;
+            }
+
+            const visibleWorkouts = showAllWorkouts
+                ? workouts
+                : workouts.slice(0, WORKOUTS_PREVIEW_LIMIT);
+
+            workoutList.innerHTML = visibleWorkouts.map(function (workout) {
+                const dateText = workout.date ? escapeHtml(workout.date) : 'No date';
+                const nameText = escapeHtml(workout.name || 'Unnamed workout');
+
+                return `
+                    <div class="workout-item">
+                        <div class="workout-meta">
+                            <div class="status-with-dot">
+                                <span class="status-dot ${workout.allSetsCompleted ? 'complete' : 'incomplete'}"></span>
+                                <strong>${nameText}</strong>
+                            </div>
+                            <span>${dateText}</span>
+                        </div>
+                        <div class="workout-actions">
+                            <a class="btn btn-secondary" href="/workout.html?workoutId=${workout.id}">Open</a>
+                            <button class="btn btn-danger" type="button" data-delete-id="${workout.id}">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (workouts.length > WORKOUTS_PREVIEW_LIMIT) {
+                toggleWorkoutsBtn.style.display = 'inline-flex';
+                toggleWorkoutsBtn.textContent = showAllWorkouts
+                    ? 'Show only last 6'
+                    : 'Show all workouts';
+            } else {
+                toggleWorkoutsBtn.style.display = 'none';
+            }
+
+            attachDeleteHandlers();
+        }
+
+        function attachDeleteHandlers() {
+            document.querySelectorAll('[data-delete-id]').forEach(function (button) {
+                button.addEventListener('click', async function () {
+                    const workoutId = button.getAttribute('data-delete-id');
+                    if (!workoutId) return;
+
+                    const confirmed = window.confirm('Delete this workout?');
+                    if (!confirmed) return;
+
+                    workoutStatus.textContent = 'Deleting workout...';
+                    workoutStatus.className = 'status';
+
+                    try {
+                        const response = await fetch(`/api/workouts/${workoutId}/delete`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': 'Bearer ' + token
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await tryReadJson(response);
+                            throw new Error(readErrorMessage(errorData, 'Failed to delete workout'));
+                        }
+
+                        workoutStatus.textContent = 'Workout deleted.';
+                        workoutStatus.className = 'status success';
+
+                        allWorkouts = allWorkouts.filter(function (workout) {
+                            return String(workout.id) !== String(workoutId);
+                        });
+
+                        if (showAllWorkouts && allWorkouts.length <= WORKOUTS_PREVIEW_LIMIT) {
+                            showAllWorkouts = false;
+                        }
+
+                        renderWorkouts(allWorkouts);
+                        userInfoText.textContent = allWorkouts.length + ' workout(s) found.';
+                    } catch (error) {
+                        workoutStatus.textContent = error.message || 'Failed to delete workout.';
+                        workoutStatus.className = 'status error';
+                    }
+                });
+            });
+        }
+
+        function sortWorkoutsNewestFirst(workouts) {
+            return [...workouts].sort(function (a, b) {
+                const dateA = a.date ? new Date(a.date).getTime() : 0;
+                const dateB = b.date ? new Date(b.date).getTime() : 0;
+
+                if (dateB !== dateA) {
+                    return dateB - dateA;
+                }
+
+                return (b.id || 0) - (a.id || 0);
+            });
+        }
+
+        async function tryReadJson(response) {
+            try {
+                return await response.json();
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function readErrorMessage(errorData, fallback) {
+            if (!errorData) return fallback;
+            if (typeof errorData.message === 'string' && errorData.message.trim()) return errorData.message;
+            return fallback;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        loadWorkouts();
+    })();
+</script>
+</body>
+</html>

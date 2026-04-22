@@ -20,11 +20,13 @@ public class SetEntryController {
         this.setService = setService;
     }
 
-    @PostMapping("/api/workouts/{workoutId}/sets")
+    @PostMapping("/{workoutId}/sets")
     public SetEntry createSet(
             @PathVariable Long workoutId,
             @Valid @RequestBody CreateSetEntryRequest request
     ) {
+        request.repsSuggestion = "";
+        request.rest = 90;
         return setService.createSet(workoutId, request);
     }
 

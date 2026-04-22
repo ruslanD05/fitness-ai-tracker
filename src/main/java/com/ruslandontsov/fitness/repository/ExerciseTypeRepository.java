@@ -9,5 +9,5 @@ import java.util.Optional;
 
 public interface ExerciseTypeRepository extends JpaRepository<ExerciseType, Long> {
     Optional<ExerciseType> findByName(String exerciseName);
-    List<ExerciseType> findByMuscleGroup(MuscleGroup muscleGroup);
+    List<ExerciseType> findByPrimaryMuscleGroup(MuscleGroup muscleGroup);
 }
