@@ -68,3 +68,6 @@ cp .env.example .env
 # enter your API key and other values in .env
 nano .env
 docker compose --env-file .env up --build
+```
+
+Then open <http://localhost:8080> in your browser.
