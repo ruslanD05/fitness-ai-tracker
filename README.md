@@ -71,3 +71,21 @@ docker compose --env-file .env up --build
 ```
 
 Then open <http://localhost:8080> in your browser.
+
+---
+
+## Tests
+
+The recovery, progression and workout generation algorithms have unit tests that run without a database:
+
+```bash
+./mvnw test
+```
+
+The full application test (`ApplicationTests`) also runs when `DB_PASSWORD` is set and the PostgreSQL database is up.
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).
